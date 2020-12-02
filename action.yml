@@ -1,0 +1,11 @@
+name: 'Find changed packages'
+description: 'Create matrix expression to build only changed packages'
+author: 'Smartly.io'
+outputs:
+  matrix:
+    description: "Matrix to use in a downstream job"
+  matrix_empty:
+    description: "'true' if there are no values in the matrix"
+runs:
+  using: 'node12'
+  main: 'dist/index.js'
