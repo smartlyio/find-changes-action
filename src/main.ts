@@ -6,8 +6,8 @@ async function run(): Promise<void> {
     const gitOutput = await gitDiff()
     const packageNames = filterGitOutput(gitOutput)
     const changedPackages: string = packageNames.join(' ')
-    core.info(`Changed packages: ${changedPackages}`)
-    core.setOutput('changed_packages', changedPackages)
+    core.info(`Changed directories: ${changedPackages}`)
+    core.setOutput('changed_directories', changedPackages)
 
     if (packageNames.length === 0) {
       core.setOutput('matrix_empty', 'true')

@@ -1,4 +1,4 @@
-name: 'Find changed packages'
+name: 'Find changed directories'
 description: 'Create matrix expression to build only changed packages'
 author: 'Smartly.io'
 outputs:
@@ -6,6 +6,8 @@ outputs:
     description: "Matrix to use in a downstream job"
   matrix_empty:
     description: "'true' if there are no values in the matrix"
+  changed_directories:
+    description: "List of directories containing changes"
 runs:
   using: 'node12'
   main: 'dist/index.js'

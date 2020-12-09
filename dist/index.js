@@ -44,8 +44,8 @@ function run() {
             const gitOutput = yield utils_1.gitDiff();
             const packageNames = utils_1.filterGitOutput(gitOutput);
             const changedPackages = packageNames.join(' ');
-            core.info(`Changed packages: ${changedPackages}`);
-            core.setOutput('changed_packages', changedPackages);
+            core.info(`Changed directories: ${changedPackages}`);
+            core.setOutput('changed_directories', changedPackages);
             if (packageNames.length === 0) {
                 core.setOutput('matrix_empty', 'true');
             }
@@ -100,26 +100,61 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.filterGitOutput = exports.gitDiff = void 0;
+exports.filterGitOutput = exports.gitDiff = exports.getBranchPoint = void 0;
+const fs_1 = __webpack_require__(747);
 const core = __importStar(__webpack_require__(186));
 const exec = __importStar(__webpack_require__(514));
-function gitDiff() {
+function execCommand(command, args) {
     return __awaiter(this, void 0, void 0, function* () {
-        core.info('Finding changed packages');
-        let gitOutput = '';
-        let gitError = '';
+        let stderr = '';
+        let stdout = '';
         const options = {};
         options.listeners = {
             stdout: (data) => {
-                gitOutput += data.toString();
+                stdout += data.toString();
             },
             stderr: (data) => {
-                gitError += data.toString();
+                stderr += data.toString();
             }
         };
-        yield exec.exec('git', ['diff', '--name-only', 'origin/master'], options);
-        core.debug(`Stderr from git: ${gitError}`);
-        return gitOutput;
+        yield exec.exec(command, args, options);
+        core.debug(`Stderr from git: ${stderr}`);
+        return { stdout, stderr };
+    });
+}
+function getBranchPoint() {
+    return __awaiter(this, void 0, void 0, function* () {
+        if (process.env['GITHUB_EVENT_NAME'] === 'pull_request') {
+            const eventPath = process.env['GITHUB_EVENT_PATH'];
+            core.info(`Reading event from ${eventPath}`);
+            if (!eventPath) {
+                throw new Error('Could not find event payload file to determine branch point.');
+            }
+            const eventData = yield fs_1.promises.readFile(eventPath);
+            const event = JSON.parse(eventData.toString());
+            if (event &&
+                event.pull_request &&
+                event.pull_request.base &&
+                event.pull_request.base.sha) {
+                core.info(`Found branch point ${event.pull_request.base.sha}`);
+                return event.pull_request.base.sha;
+            }
+            else {
+                throw new Error('Event payload does not provide the HEAD SHA. Unable to determine branch point to compare changes.');
+            }
+        }
+        else {
+            throw new Error('find-changed-packages only works on pull_request events');
+        }
+    });
+}
+exports.getBranchPoint = getBranchPoint;
+function gitDiff() {
+    return __awaiter(this, void 0, void 0, function* () {
+        core.info('Finding changed packages');
+        const diffBase = yield getBranchPoint();
+        const gitOutput = yield execCommand('git', ['diff', '--name-only', diffBase]);
+        return gitOutput.stdout;
     });
 }
 exports.gitDiff = gitDiff;
