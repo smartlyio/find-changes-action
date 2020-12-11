@@ -176,18 +176,15 @@ describe('filterGitOutputByFile', () => {
       'deeply',
       '.github'
     ]
-    const expected = [
-      'package1',
-      'package2',
-      'nested',
-      'deeply'
-    ]
+    const expected = ['package1', 'package2', 'nested', 'deeply']
     const context: Context = {
       directoryContaining: null,
       directoryLevels: null,
       exclude: /^\.github($|\/.*)/
     }
-    expect(await filterGitOutputByFile(changedDirectories, context)).toEqual(expected)
+    expect(await filterGitOutputByFile(changedDirectories, context)).toEqual(
+      expected
+    )
   })
 
   test('filter out excluded entries with nested directories', async () => {
@@ -196,32 +193,27 @@ describe('filterGitOutputByFile', () => {
       'deeply/nested',
       '.github/actions'
     ]
-    const expected = [
-      'nested/package',
-      'deeply/nested'
-    ]
+    const expected = ['nested/package', 'deeply/nested']
     const context: Context = {
       directoryContaining: null,
       directoryLevels: null,
       exclude: /^\.github($|\/.*)/
     }
-    expect(await filterGitOutputByFile(changedDirectories, context)).toEqual(expected)
+    expect(await filterGitOutputByFile(changedDirectories, context)).toEqual(
+      expected
+    )
   })
 
   test('filter to only directory containing file', async () => {
-    const changedDirectories = [
-      '__tests__',
-      'deeply/nested',
-      '.github/actions'
-    ]
-    const expected = [
-      '__tests__',
-    ]
+    const changedDirectories = ['__tests__', 'deeply/nested', '.github/actions']
+    const expected = ['__tests__']
     const context: Context = {
       directoryContaining: 'pr_event.json',
       directoryLevels: null,
       exclude: /^\.github($|\/.*)/
     }
-    expect(await filterGitOutputByFile(changedDirectories, context)).toEqual(expected)
+    expect(await filterGitOutputByFile(changedDirectories, context)).toEqual(
+      expected
+    )
   })
 })
