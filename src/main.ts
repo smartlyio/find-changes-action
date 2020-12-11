@@ -1,6 +1,7 @@
 import * as core from '@actions/core'
 import {getContext} from './context'
 import {
+  getBranchPoint,
   gitDiff,
   getChangedDirectories,
   filterGitOutputByFile
@@ -9,7 +10,11 @@ import {
 async function run(): Promise<void> {
   try {
     const context = await getContext()
-    const diffOutput = await gitDiff()
+    const diffBase = await getBranchPoint()
+    core.info(`Using branch point of "${diffBase}" to determine changes`)
+    core.setOutput('diff_base', diffBase)
+
+    const diffOutput = await gitDiff(diffBase)
     const changedDirectories: string[] = getChangedDirectories(
       diffOutput,
       context

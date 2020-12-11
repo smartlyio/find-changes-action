@@ -58,9 +58,8 @@ export async function getBranchPoint(): Promise<string> {
   }
 }
 
-export async function gitDiff(): Promise<string> {
+export async function gitDiff(diffBase: string): Promise<string> {
   core.info('Finding changed packages')
-  const diffBase = await getBranchPoint()
   const gitOutput = await execCommand('git', ['diff', '--name-only', diffBase])
   return gitOutput.stdout
 }
