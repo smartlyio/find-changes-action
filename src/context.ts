@@ -14,7 +14,7 @@ export async function getContext(): Promise<Context> {
   const directoryLevels: number | null =
     directoryLevelsRaw === '' ? null : parseInt(directoryLevelsRaw)
   const directoryContaining: string | null =
-    directoryContainingRaw === '' ? null : directoryContaining
+    directoryContainingRaw === '' ? null : directoryContainingRaw
 
   if (!directoryLevels && !directoryContaining) {
     throw new Error(
