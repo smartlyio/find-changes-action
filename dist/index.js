@@ -162,7 +162,7 @@ function getChangedDirectories(diffOutput, context) {
     const changedDirectories = diffOutput
         .split('\n')
         .map(line => {
-        const parts = line.trim().split('/');
+        const parts = line.trim().split(path.sep);
         if (parts.length <= directoryLevels) {
             return null;
         }
@@ -170,27 +170,37 @@ function getChangedDirectories(diffOutput, context) {
         if (slice.length === 0) {
             return null;
         }
-        return slice.join('/');
+        return slice.join(path.sep);
     })
         .filter(item => item);
     const uniqueDirectories = new Set(changedDirectories);
     return [...uniqueDirectories];
 }
 exports.getChangedDirectories = getChangedDirectories;
+function range(start, end) {
+    const length = end - start;
+    return Array.from({ length }, (_, i) => start + i);
+}
 function containsFileFilter(directory, filename) {
     return __awaiter(this, void 0, void 0, function* () {
-        const filepath = path.join(directory, filename);
-        let stat;
-        try {
-            stat = yield fs_1.promises.stat(filepath);
-        }
-        catch (e) {
-            if (e.code === 'ENOENT') {
-                return false;
+        const directoryParts = directory.split(path.sep);
+        const sliceRanges = range(1, directoryParts.length + 1);
+        for (const slice of sliceRanges) {
+            const directoryPart = directoryParts.slice(0, slice).join(path.sep);
+            const filepath = path.join(directoryPart, filename);
+            try {
+                const stat = yield fs_1.promises.stat(filepath);
+                if (stat.isFile()) {
+                    return true;
+                }
             }
-            throw e;
+            catch (e) {
+                if (e.code !== 'ENOENT') {
+                    throw e;
+                }
+            }
         }
-        return stat.isFile();
+        return false;
     });
 }
 exports.containsFileFilter = containsFileFilter;
