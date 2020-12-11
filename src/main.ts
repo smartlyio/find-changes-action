@@ -1,21 +1,34 @@
 import * as core from '@actions/core'
-import {gitDiff, filterGitOutput} from './utils'
+import {getContext} from './context'
+import {
+  gitDiff,
+  getChangedDirectories,
+  filterGitOutputByFile
+} from './findChanges'
 
 async function run(): Promise<void> {
   try {
-    const gitOutput = await gitDiff()
-    const packageNames = filterGitOutput(gitOutput)
-    const changedPackages: string = packageNames.join(' ')
-    core.info(`Changed directories: ${changedPackages}`)
-    core.setOutput('changed_directories', changedPackages)
+    const context = await getContext()
+    const diffOutput = await gitDiff()
+    const changedDirectories: string[] = getChangedDirectories(
+      diffOutput,
+      context
+    )
+    const directoryNames = await filterGitOutputByFile(
+      changedDirectories,
+      context
+    )
 
-    if (packageNames.length === 0) {
+    core.info(`Changed directories: ${directoryNames.join(' ')}`)
+    core.setOutput('changed_directories', directoryNames.join(' '))
+
+    if (directoryNames.length === 0) {
       core.setOutput('matrix_empty', 'true')
     } else {
       core.setOutput('matrix_empty', 'false')
     }
 
-    const matrix = {directory: [...packageNames]}
+    const matrix = {directory: [...directoryNames]}
     const matrixJson = JSON.stringify(matrix)
     core.info(`Created matrix: ${matrixJson}`)
     core.setOutput('matrix', matrixJson)

@@ -1,6 +1,8 @@
 import {promises as fs} from 'fs'
+import * as path from 'path'
 import * as core from '@actions/core'
 import * as exec from '@actions/exec'
+import {Context} from './context'
 
 interface GitResult {
   stdout: string
@@ -63,25 +65,74 @@ export async function gitDiff(): Promise<string> {
   return gitOutput.stdout
 }
 
-export function filterGitOutput(gitOutput: string): string[] {
-  const packageNames: string[] = gitOutput
+export function getChangedDirectories(
+  diffOutput: string,
+  context: Context
+): string[] {
+  const directoryLevels: number = context.directoryLevels
+    ? context.directoryLevels
+    : -1
+  const changedDirectories: string[] = diffOutput
     .split('\n')
     .map(line => {
       const parts = line.trim().split('/')
-      if (parts.length === 1) {
+      if (parts.length <= directoryLevels) {
         return null
       }
-      return parts[0]
+      const slice = parts.slice(0, directoryLevels)
+      if (slice.length === 0) {
+        return null
+      }
+      return slice.join('/')
     })
     .filter(item => item) as string[]
-  const uniquePackageNames = new Set(
-    packageNames.filter(packageName => {
-      if (packageName.match(/^00_.*/) || packageName === '.github') {
-        return false
-      }
-      return true
-    })
-  )
 
-  return [...uniquePackageNames]
+  const uniqueDirectories = new Set(changedDirectories)
+  return [...uniqueDirectories]
+}
+
+export async function containsFileFilter(
+  directory: string,
+  filename: string
+): Promise<boolean> {
+  const filepath = path.join(directory, filename)
+  let stat
+  try {
+    stat = await fs.stat(filepath)
+  } catch (e) {
+    if (e.code === 'ENOENT') {
+      return false
+    }
+    throw e
+  }
+  return stat.isFile()
+}
+
+export function isExcludedFilter(directory: string, pattern: RegExp): boolean {
+  return !!directory.match(pattern)
+}
+
+export async function filterGitOutputByFile(
+  changedDirectories: string[],
+  context: Context
+): Promise<string[]> {
+  const filteredDirectories: string[] = []
+
+  for (const directory of changedDirectories) {
+    if (!isExcludedFilter(directory, context.exclude)) {
+      if (!context.directoryContaining) {
+        filteredDirectories.push(directory)
+      } else {
+        const include = await containsFileFilter(
+          directory,
+          context.directoryContaining
+        )
+        if (include) {
+          filteredDirectories.push(directory)
+        }
+      }
+    }
+  }
+
+  return filteredDirectories
 }
