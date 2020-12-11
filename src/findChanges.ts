@@ -74,7 +74,7 @@ export function getChangedDirectories(
   const changedDirectories: string[] = diffOutput
     .split('\n')
     .map(line => {
-      const parts = line.trim().split('/')
+      const parts = line.trim().split(path.sep)
       if (parts.length <= directoryLevels) {
         return null
       }
@@ -82,7 +82,7 @@ export function getChangedDirectories(
       if (slice.length === 0) {
         return null
       }
-      return slice.join('/')
+      return slice.join(path.sep)
     })
     .filter(item => item) as string[]
 
@@ -90,21 +90,32 @@ export function getChangedDirectories(
   return [...uniqueDirectories]
 }
 
+function range(start: number, end: number): number[] {
+  const length = end - start
+  return Array.from({length}, (_, i) => start + i)
+}
+
 export async function containsFileFilter(
   directory: string,
   filename: string
 ): Promise<boolean> {
-  const filepath = path.join(directory, filename)
-  let stat
-  try {
-    stat = await fs.stat(filepath)
-  } catch (e) {
-    if (e.code === 'ENOENT') {
-      return false
+  const directoryParts = directory.split(path.sep)
+  const sliceRanges = range(1, directoryParts.length + 1)
+  for (const slice of sliceRanges) {
+    const directoryPart = directoryParts.slice(0, slice).join(path.sep)
+    const filepath = path.join(directoryPart, filename)
+    try {
+      const stat = await fs.stat(filepath)
+      if (stat.isFile()) {
+        return true
+      }
+    } catch (e) {
+      if (e.code !== 'ENOENT') {
+        throw e
+      }
     }
-    throw e
   }
-  return stat.isFile()
+  return false
 }
 
 export function isExcludedFilter(directory: string, pattern: RegExp): boolean {

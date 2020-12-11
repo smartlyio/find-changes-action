@@ -146,6 +146,12 @@ describe('containsFileFilter', () => {
     expect(await containsFileFilter(directory, filename)).toEqual(true)
   })
 
+  test('determines a parent directory the file requested', async () => {
+    const directory = path.join(__dirname, 'sub/directory')
+    const filename = 'pr_event.json'
+    expect(await containsFileFilter(directory, filename)).toEqual(true)
+  })
+
   test('correctly determines that the provided directory does not contain the file requested', async () => {
     const directory = __dirname
     const filename = 'dont-exist'
