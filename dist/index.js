@@ -147,10 +147,9 @@ function getBranchPoint() {
     });
 }
 exports.getBranchPoint = getBranchPoint;
-function gitDiff() {
+function gitDiff(diffBase) {
     return __awaiter(this, void 0, void 0, function* () {
         core.info('Finding changed packages');
-        const diffBase = yield getBranchPoint();
         const gitOutput = yield execCommand('git', ['diff', '--name-only', diffBase]);
         return gitOutput.stdout;
     });
@@ -263,7 +262,10 @@ function run() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             const context = yield context_1.getContext();
-            const diffOutput = yield findChanges_1.gitDiff();
+            const diffBase = yield findChanges_1.getBranchPoint();
+            core.info(`Using branch point of "${diffBase}" to determine changes`);
+            core.setOutput('diff_base', diffBase);
+            const diffOutput = yield findChanges_1.gitDiff(diffBase);
             const changedDirectories = findChanges_1.getChangedDirectories(diffOutput, context);
             const directoryNames = yield findChanges_1.filterGitOutputByFile(changedDirectories, context);
             core.info(`Changed directories: ${directoryNames.join(' ')}`);
