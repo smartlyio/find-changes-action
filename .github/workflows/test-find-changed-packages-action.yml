@@ -1,36 +1,28 @@
 name: Test find-changed-packages action
-on: # rebuild any PRs and main branch changes
+
+on:
   pull_request:
     branches:
       - master
-    paths:
-      - .github/actions/**
   push:
     branches:
       - master
-    paths:
-      - .github/actions/**
 
 jobs:
   build: # make sure build/ci work properly
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
-    - run: cd .github/actions/find-changed-packages
     - name: "Install"
-      working-directory: .github/actions/find-changed-packages
       run: |
         npm install
     - name: "Run build"
-      working-directory: .github/actions/find-changed-packages
       run: |
         npm run all
     - name: "Run tests"
-      working-directory: .github/actions/find-changed-packages
       run: |
         npm run test
     - name: "Verify artefacts are up to date in the repository"
-      working-directory: .github/actions/find-changed-packages
       run: |
         # Error if there are changes after the build
         if [ "$(git status --porcelain | wc -c)" -gt "0" ]; then
@@ -45,4 +37,4 @@ jobs:
       with:
         fetch-depth: 0
     - name: Run the action
-      uses: ./.github/actions/find-changed-packages
+      uses: ./.
