@@ -21,14 +21,14 @@ inputs:
   exclude:
     description: >-
       Exclude directories that match the pattern.  If overriding,
-      remember to include matching /^\.github\/.*/.
+      remember to include matching /^\\.github\\/.*/.
 
       Exclusion is applied after discovering changes based on the
       pattern.
 
       This should be a regular expression pattern.
     required: false
-    default: "^\.github($|\/.*)"
+    default: "^\\.github($|\\/.*)"
 outputs:
   matrix:
     description: "Matrix to use in a downstream job"
