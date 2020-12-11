@@ -191,7 +191,7 @@ function containsFileFilter(directory, filename) {
             try {
                 const stat = yield fs_1.promises.stat(filepath);
                 if (stat.isFile()) {
-                    return true;
+                    return directoryPart;
                 }
             }
             catch (e) {
@@ -200,7 +200,7 @@ function containsFileFilter(directory, filename) {
                 }
             }
         }
-        return false;
+        return null;
     });
 }
 exports.containsFileFilter = containsFileFilter;
@@ -219,12 +219,13 @@ function filterGitOutputByFile(changedDirectories, context) {
                 else {
                     const include = yield containsFileFilter(directory, context.directoryContaining);
                     if (include) {
-                        filteredDirectories.push(directory);
+                        filteredDirectories.push(include);
                     }
                 }
             }
         }
-        return filteredDirectories;
+        const uniqueDirectories = new Set(filteredDirectories);
+        return [...uniqueDirectories];
     });
 }
 exports.filterGitOutputByFile = filterGitOutputByFile;
