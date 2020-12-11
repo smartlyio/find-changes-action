@@ -98,7 +98,7 @@ function range(start: number, end: number): number[] {
 export async function containsFileFilter(
   directory: string,
   filename: string
-): Promise<boolean> {
+): Promise<string | null> {
   const directoryParts = directory.split(path.sep)
   const sliceRanges = range(1, directoryParts.length + 1)
   for (const slice of sliceRanges) {
@@ -107,7 +107,7 @@ export async function containsFileFilter(
     try {
       const stat = await fs.stat(filepath)
       if (stat.isFile()) {
-        return true
+        return directoryPart
       }
     } catch (e) {
       if (e.code !== 'ENOENT') {
@@ -115,7 +115,7 @@ export async function containsFileFilter(
       }
     }
   }
-  return false
+  return null
 }
 
 export function isExcludedFilter(directory: string, pattern: RegExp): boolean {
@@ -138,11 +138,12 @@ export async function filterGitOutputByFile(
           context.directoryContaining
         )
         if (include) {
-          filteredDirectories.push(directory)
+          filteredDirectories.push(include)
         }
       }
     }
   }
 
-  return filteredDirectories
+  const uniqueDirectories = new Set(filteredDirectories)
+  return [...uniqueDirectories]
 }
