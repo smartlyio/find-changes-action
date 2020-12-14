@@ -1,6 +1,13 @@
 import {promises as fs} from 'fs'
 import * as path from 'path'
-import {filterGitOutput, getBranchPoint} from '../src/utils'
+import {
+  getBranchPoint,
+  getChangedDirectories,
+  containsFileFilter,
+  isExcludedFilter,
+  filterGitOutputByFile
+} from '../src/findChanges'
+import {Context} from '../src/context'
 
 const OLD_ENV = process.env
 beforeEach(() => {
@@ -9,31 +16,6 @@ beforeEach(() => {
 
 afterEach(() => {
   process.env = OLD_ENV
-})
-
-describe('filter git output', () => {
-  test('gets only package directory names', async () => {
-    const gitOutput = `
-.github/actions/thing
-.gitignore
-package1/file
-package2/file
-package2/otherfile
-00_skipme
-`
-    const packageNames: string[] = filterGitOutput(gitOutput)
-    expect(new Set(packageNames)).toEqual(new Set(['package1', 'package2']))
-  })
-
-  test('gets only package directory names', async () => {
-    const gitOutput = `
-.github/actions/thing
-.gitignore
-00_skipme
-`
-    const packageNames: string[] = filterGitOutput(gitOutput)
-    expect(packageNames).toEqual([])
-  })
 })
 
 describe('get branch point', () => {
@@ -64,5 +46,180 @@ describe('get branch point', () => {
 
     const branchPoint = await getBranchPoint()
     expect(branchPoint).toEqual(event.pull_request.base.sha)
+  })
+})
+
+describe('getChangedDirectories', () => {
+  test('extract changed directories from git diff output', () => {
+    const gitOutput = `\
+.github/actions/thing
+.gitignore
+package1/file
+package2/file
+package2/otherfile
+nested/package/config.yml
+nested/package/Dockerfile
+deeply/nested/package/config.yml
+deeply/nested/package/Dockerfile
+deeply/nested/package/README
+top-level-file
+`
+    const context: Context = {
+      directoryContaining: null, // Not used by getChangedDirectories
+      directoryLevels: null,
+      exclude: /^\.github\/.*/ // Not used by getChangedDirectories
+    }
+    const uniqueDirectories = getChangedDirectories(gitOutput, context)
+    const expected = new Set([
+      'package1',
+      'package2',
+      'nested/package',
+      'deeply/nested/package',
+      '.github/actions' // Excluded later, not through getChangedDirectories
+    ])
+    expect(new Set(uniqueDirectories)).toEqual(expected)
+  })
+
+  test('extract changed directories of depth 1 from git diff output', () => {
+    const gitOutput = `\
+.github/actions/thing
+.gitignore
+package1/file
+package2/file
+package2/otherfile
+nested/package/config.yml
+nested/package/Dockerfile
+deeply/nested/package/config.yml
+deeply/nested/package/Dockerfile
+deeply/nested/package/README
+top-level-file
+`
+    const context: Context = {
+      directoryContaining: null,
+      directoryLevels: 1,
+      exclude: /^\.github\/.*/ // Not used by getChangedDirectories
+    }
+    const uniqueDirectories = getChangedDirectories(gitOutput, context)
+    const expected = new Set([
+      'package1',
+      'package2',
+      'nested',
+      'deeply',
+      '.github' // Excluded later, not through getChangedDirectories
+    ])
+    expect(new Set(uniqueDirectories)).toEqual(expected)
+  })
+
+  test('extract changed directories of depth 2 from git diff output', () => {
+    const gitOutput = `\
+.github/actions/thing
+.gitignore
+package1/file
+package2/file
+package2/otherfile
+nested/package/config.yml
+nested/package/Dockerfile
+deeply/nested/package/config.yml
+deeply/nested/package/Dockerfile
+deeply/nested/package/README
+top-level-file
+`
+    const context: Context = {
+      directoryContaining: null,
+      directoryLevels: 2,
+      exclude: /^\.github\/.*/ // Not used by getChangedDirectories
+    }
+    const uniqueDirectories = getChangedDirectories(gitOutput, context)
+    const expected = new Set([
+      'nested/package',
+      'deeply/nested',
+      '.github/actions' // Excluded later, not through getChangedDirectories
+    ])
+    expect(new Set(uniqueDirectories)).toEqual(expected)
+  })
+})
+
+describe('containsFileFilter', () => {
+  test('determines that the provided directory contains the file requested', async () => {
+    const directory = __dirname
+    const filename = 'pr_event.json'
+    expect(await containsFileFilter(directory, filename)).toEqual(__dirname)
+  })
+
+  test('determines a parent directory the file requested', async () => {
+    const directory = path.join(__dirname, 'sub/directory')
+    const filename = 'pr_event.json'
+    expect(await containsFileFilter(directory, filename)).toEqual(__dirname)
+  })
+
+  test('correctly determines that the provided directory does not contain the file requested', async () => {
+    const directory = __dirname
+    const filename = 'dont-exist'
+    expect(await containsFileFilter(directory, filename)).toEqual(null)
+  })
+})
+
+describe('isExcludedFilter', () => {
+  test('directories are excluded by the exclusion filter', () => {
+    const directory = '00_test'
+    const pattern = new RegExp('^00_.*')
+    expect(isExcludedFilter(directory, pattern)).toEqual(true)
+  })
+
+  test('unmatching directories are not filtered', () => {
+    const directory = 'grafana'
+    const pattern = new RegExp('^00_.*')
+    expect(isExcludedFilter(directory, pattern)).toEqual(false)
+  })
+})
+
+describe('filterGitOutputByFile', () => {
+  test('filter out excluded entries', async () => {
+    const changedDirectories = [
+      'package1',
+      'package2',
+      'nested',
+      'deeply',
+      '.github'
+    ]
+    const expected = ['package1', 'package2', 'nested', 'deeply']
+    const context: Context = {
+      directoryContaining: null,
+      directoryLevels: null,
+      exclude: /^\.github($|\/.*)/
+    }
+    expect(await filterGitOutputByFile(changedDirectories, context)).toEqual(
+      expected
+    )
+  })
+
+  test('filter out excluded entries with nested directories', async () => {
+    const changedDirectories = [
+      'nested/package',
+      'deeply/nested',
+      '.github/actions'
+    ]
+    const expected = ['nested/package', 'deeply/nested']
+    const context: Context = {
+      directoryContaining: null,
+      directoryLevels: null,
+      exclude: /^\.github($|\/.*)/
+    }
+    expect(await filterGitOutputByFile(changedDirectories, context)).toEqual(
+      expected
+    )
+  })
+
+  test('filter to only directory containing file', async () => {
+    const changedDirectories = ['__tests__', 'deeply/nested', '.github/actions']
+    const expected = ['__tests__']
+    const context: Context = {
+      directoryContaining: 'pr_event.json',
+      directoryLevels: null,
+      exclude: /^\.github($|\/.*)/
+    }
+    expect(await filterGitOutputByFile(changedDirectories, context)).toEqual(
+      expected
+    )
   })
 })

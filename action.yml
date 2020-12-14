@@ -1,6 +1,34 @@
 name: 'Find changed directories'
 description: 'Create matrix expression to build only changed packages'
 author: 'Smartly.io'
+inputs:
+  directory_containing:
+    description: >-
+      Find changes to directories containing a file with this name.
+
+      This is mutually excludive with the directory_levels option.
+    required: false
+  directory_levels:
+    required: false
+    description: >-
+      Find changes to directories nested to this level.
+
+      e.g. "directory_levels: 1" will provide the first level (in the
+      repository root) directories that contain changes, no matter how
+      deeply nested the changed files are.
+
+      This is mutually excludive with the directory_containing option.
+  exclude:
+    description: >-
+      Exclude directories that match the pattern.  If overriding,
+      remember to include matching /^\\.github\\/.*/.
+
+      Exclusion is applied after discovering changes based on the
+      pattern.
+
+      This should be a regular expression pattern.
+    required: false
+    default: "^\\.github($|\\/.*)"
 outputs:
   matrix:
     description: "Matrix to use in a downstream job"
@@ -8,6 +36,8 @@ outputs:
     description: "'true' if there are no values in the matrix"
   changed_directories:
     description: "List of directories containing changes"
+  diff_base:
+    description: "Git commit used as the base for finding pull request changes"
 runs:
   using: 'node12'
   main: 'dist/index.js'

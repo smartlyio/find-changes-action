@@ -30,12 +30,27 @@ jobs:
             echo "Run `npm run-script package` and commit the changes."
             exit 1
         fi
-  test: # make sure the action works on a clean machine without building
+
+  test_directory_levels:
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request'
     steps:
     - uses: actions/checkout@v2
       with:
         fetch-depth: 0
-    - name: Run the action
+    - name: Run the action with levels
       uses: ./.
+      with:
+        directory_levels: 1
+
+  test_directory_containing:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+    - name: Run the action with files containing
+      uses: ./.
+      with:
+        directory_containing: main.ts

@@ -3,7 +3,7 @@ require('./sourcemap-register.js');module.exports =
 /******/ 	"use strict";
 /******/ 	var __webpack_modules__ = ({
 
-/***/ 109:
+/***/ 842:
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
 
@@ -36,38 +36,35 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.getContext = void 0;
 const core = __importStar(__webpack_require__(186));
-const utils_1 = __webpack_require__(918);
-function run() {
+function getContext() {
     return __awaiter(this, void 0, void 0, function* () {
-        try {
-            const gitOutput = yield utils_1.gitDiff();
-            const packageNames = utils_1.filterGitOutput(gitOutput);
-            const changedPackages = packageNames.join(' ');
-            core.info(`Changed directories: ${changedPackages}`);
-            core.setOutput('changed_directories', changedPackages);
-            if (packageNames.length === 0) {
-                core.setOutput('matrix_empty', 'true');
-            }
-            else {
-                core.setOutput('matrix_empty', 'false');
-            }
-            const matrix = { directory: [...packageNames] };
-            const matrixJson = JSON.stringify(matrix);
-            core.info(`Created matrix: ${matrixJson}`);
-            core.setOutput('matrix', matrixJson);
+        const directoryContainingRaw = core.getInput('directory_containing');
+        const directoryLevelsRaw = core.getInput('directory_levels');
+        const exclude = core.getInput('exclude');
+        const directoryLevels = directoryLevelsRaw === '' ? null : parseInt(directoryLevelsRaw);
+        const directoryContaining = directoryContainingRaw === '' ? null : directoryContainingRaw;
+        if (!directoryLevels && !directoryContaining) {
+            throw new Error('One of directory_containing or directory_levels is required');
         }
-        catch (error) {
-            core.setFailed(error.message);
+        else if (directoryLevels && directoryContaining) {
+            throw new Error('Only one of directory_containing or directory_levels is allowed');
         }
+        const context = {
+            directoryContaining,
+            directoryLevels,
+            exclude: new RegExp(exclude)
+        };
+        return context;
     });
 }
-run();
+exports.getContext = getContext;
 
 
 /***/ }),
 
-/***/ 918:
+/***/ 884:
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
 
@@ -100,8 +97,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.filterGitOutput = exports.gitDiff = exports.getBranchPoint = void 0;
+exports.filterGitOutputByFile = exports.isExcludedFilter = exports.containsFileFilter = exports.getChangedDirectories = exports.gitDiff = exports.getBranchPoint = void 0;
 const fs_1 = __webpack_require__(747);
+const path = __importStar(__webpack_require__(622));
 const core = __importStar(__webpack_require__(186));
 const exec = __importStar(__webpack_require__(514));
 function execCommand(command, args) {
@@ -149,35 +147,157 @@ function getBranchPoint() {
     });
 }
 exports.getBranchPoint = getBranchPoint;
-function gitDiff() {
+function gitDiff(diffBase) {
     return __awaiter(this, void 0, void 0, function* () {
         core.info('Finding changed packages');
-        const diffBase = yield getBranchPoint();
         const gitOutput = yield execCommand('git', ['diff', '--name-only', diffBase]);
         return gitOutput.stdout;
     });
 }
 exports.gitDiff = gitDiff;
-function filterGitOutput(gitOutput) {
-    const packageNames = gitOutput
+function getChangedDirectories(diffOutput, context) {
+    const directoryLevels = context.directoryLevels
+        ? context.directoryLevels
+        : -1;
+    const changedDirectories = diffOutput
         .split('\n')
         .map(line => {
-        const parts = line.trim().split('/');
-        if (parts.length === 1) {
+        const parts = line.trim().split(path.sep);
+        if (parts.length <= directoryLevels) {
             return null;
         }
-        return parts[0];
+        const slice = parts.slice(0, directoryLevels);
+        if (slice.length === 0) {
+            return null;
+        }
+        return slice.join(path.sep);
     })
         .filter(item => item);
-    const uniquePackageNames = new Set(packageNames.filter(packageName => {
-        if (packageName.match(/^00_.*/) || packageName === '.github') {
-            return false;
-        }
-        return true;
-    }));
-    return [...uniquePackageNames];
+    const uniqueDirectories = new Set(changedDirectories);
+    return [...uniqueDirectories];
 }
-exports.filterGitOutput = filterGitOutput;
+exports.getChangedDirectories = getChangedDirectories;
+function range(start, end) {
+    const length = end - start;
+    return Array.from({ length }, (_, i) => start + i);
+}
+function containsFileFilter(directory, filename) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const directoryParts = directory.split(path.sep);
+        const sliceRanges = range(1, directoryParts.length + 1);
+        for (const slice of sliceRanges) {
+            const directoryPart = directoryParts.slice(0, slice).join(path.sep);
+            const filepath = path.join(directoryPart, filename);
+            try {
+                const stat = yield fs_1.promises.stat(filepath);
+                if (stat.isFile()) {
+                    return directoryPart;
+                }
+            }
+            catch (e) {
+                if (e.code !== 'ENOENT') {
+                    throw e;
+                }
+            }
+        }
+        return null;
+    });
+}
+exports.containsFileFilter = containsFileFilter;
+function isExcludedFilter(directory, pattern) {
+    return !!directory.match(pattern);
+}
+exports.isExcludedFilter = isExcludedFilter;
+function filterGitOutputByFile(changedDirectories, context) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const filteredDirectories = [];
+        for (const directory of changedDirectories) {
+            if (!isExcludedFilter(directory, context.exclude)) {
+                if (!context.directoryContaining) {
+                    filteredDirectories.push(directory);
+                }
+                else {
+                    const include = yield containsFileFilter(directory, context.directoryContaining);
+                    if (include) {
+                        filteredDirectories.push(include);
+                    }
+                }
+            }
+        }
+        const uniqueDirectories = new Set(filteredDirectories);
+        return [...uniqueDirectories];
+    });
+}
+exports.filterGitOutputByFile = filterGitOutputByFile;
+
+
+/***/ }),
+
+/***/ 109:
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+const core = __importStar(__webpack_require__(186));
+const context_1 = __webpack_require__(842);
+const findChanges_1 = __webpack_require__(884);
+function run() {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            const context = yield context_1.getContext();
+            const diffBase = yield findChanges_1.getBranchPoint();
+            core.info(`Using branch point of "${diffBase}" to determine changes`);
+            core.setOutput('diff_base', diffBase);
+            const diffOutput = yield findChanges_1.gitDiff(diffBase);
+            const changedDirectories = findChanges_1.getChangedDirectories(diffOutput, context);
+            const directoryNames = yield findChanges_1.filterGitOutputByFile(changedDirectories, context);
+            core.info(`Changed directories: ${directoryNames.join(' ')}`);
+            core.setOutput('changed_directories', directoryNames.join(' '));
+            if (directoryNames.length === 0) {
+                core.setOutput('matrix_empty', 'true');
+            }
+            else {
+                core.setOutput('matrix_empty', 'false');
+            }
+            const matrix = { directory: [...directoryNames] };
+            const matrixJson = JSON.stringify(matrix);
+            core.info(`Created matrix: ${matrixJson}`);
+            core.setOutput('matrix', matrixJson);
+        }
+        catch (error) {
+            core.setFailed(error.message);
+        }
+    });
+}
+run();
 
 
 /***/ }),
