@@ -8,7 +8,6 @@ import {
 } from '../src/findChanges'
 import {Context} from '../src/context'
 
-
 class FakeFsError extends Error {
   code: string
   constructor(message: string) {
@@ -16,7 +15,6 @@ class FakeFsError extends Error {
     this.code = message
   }
 }
-
 
 jest.mock('fs')
 const {promises: fsMocked} = require('fs')
