@@ -15,7 +15,7 @@ async function run(): Promise<void> {
     core.setOutput('diff_base', diffBase)
 
     const diffOutput = await gitDiff(diffBase)
-    const changedDirectories: string[] = getChangedDirectories(
+    const changedDirectories: string[] = await getChangedDirectories(
       diffOutput,
       context
     )

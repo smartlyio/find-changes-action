@@ -64,16 +64,15 @@ export async function gitDiff(diffBase: string): Promise<string> {
   return gitOutput.stdout
 }
 
-export function getChangedDirectories(
+export async function getChangedDirectories(
   diffOutput: string,
   context: Context
-): string[] {
+): Promise<string[]> {
   const directoryLevels: number = context.directoryLevels
     ? context.directoryLevels
     : -1
-  const changedDirectories: string[] = diffOutput
-    .split('\n')
-    .map(line => {
+  const changedDirectories = await Promise.all(
+    diffOutput.split('\n').map(async line => {
       const parts = line.trim().split(path.sep)
       if (parts.length <= directoryLevels) {
         return null
@@ -82,11 +81,19 @@ export function getChangedDirectories(
       if (slice.length === 0) {
         return null
       }
-      return slice.join(path.sep)
+      const directory = slice.join(path.sep)
+      try {
+        await fs.stat(directory)
+        return directory
+      } catch (e) {
+        return null
+      }
     })
-    .filter(item => item) as string[]
+  )
 
-  const uniqueDirectories = new Set(changedDirectories)
+  const uniqueDirectories = new Set(
+    changedDirectories.filter(item => item) as string[]
+  )
   return [...uniqueDirectories]
 }
 
