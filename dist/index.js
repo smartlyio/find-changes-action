@@ -156,25 +156,31 @@ function gitDiff(diffBase) {
 }
 exports.gitDiff = gitDiff;
 function getChangedDirectories(diffOutput, context) {
-    const directoryLevels = context.directoryLevels
-        ? context.directoryLevels
-        : -1;
-    const changedDirectories = diffOutput
-        .split('\n')
-        .map(line => {
-        const parts = line.trim().split(path.sep);
-        if (parts.length <= directoryLevels) {
-            return null;
-        }
-        const slice = parts.slice(0, directoryLevels);
-        if (slice.length === 0) {
-            return null;
-        }
-        return slice.join(path.sep);
-    })
-        .filter(item => item);
-    const uniqueDirectories = new Set(changedDirectories);
-    return [...uniqueDirectories];
+    return __awaiter(this, void 0, void 0, function* () {
+        const directoryLevels = context.directoryLevels
+            ? context.directoryLevels
+            : -1;
+        const changedDirectories = yield Promise.all(diffOutput.split('\n').map((line) => __awaiter(this, void 0, void 0, function* () {
+            const parts = line.trim().split(path.sep);
+            if (parts.length <= directoryLevels) {
+                return null;
+            }
+            const slice = parts.slice(0, directoryLevels);
+            if (slice.length === 0) {
+                return null;
+            }
+            const directory = slice.join(path.sep);
+            try {
+                yield fs_1.promises.stat(directory);
+                return directory;
+            }
+            catch (e) {
+                return null;
+            }
+        })));
+        const uniqueDirectories = new Set(changedDirectories.filter(item => item));
+        return [...uniqueDirectories];
+    });
 }
 exports.getChangedDirectories = getChangedDirectories;
 function range(start, end) {
@@ -277,7 +283,7 @@ function run() {
             core.info(`Using branch point of "${diffBase}" to determine changes`);
             core.setOutput('diff_base', diffBase);
             const diffOutput = yield findChanges_1.gitDiff(diffBase);
-            const changedDirectories = findChanges_1.getChangedDirectories(diffOutput, context);
+            const changedDirectories = yield findChanges_1.getChangedDirectories(diffOutput, context);
             const directoryNames = yield findChanges_1.filterGitOutputByFile(changedDirectories, context);
             core.info(`Changed directories: ${directoryNames.join(' ')}`);
             core.setOutput('changed_directories', directoryNames.join(' '));
