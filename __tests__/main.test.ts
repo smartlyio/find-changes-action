@@ -5,7 +5,7 @@ import {
   containsFileFilter,
   isExcludedFilter,
   filterGitOutputByFile
-} from '../src/findChanges'
+} from '../src/find-changes'
 import {Context} from '../src/context'
 
 class FakeFsError extends Error {

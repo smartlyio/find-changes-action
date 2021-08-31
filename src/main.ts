@@ -1,11 +1,11 @@
 import * as core from '@actions/core'
-import {getContext} from './context'
 import {
+  filterGitOutputByFile,
   getBranchPoint,
-  gitDiff,
   getChangedDirectories,
-  filterGitOutputByFile
-} from './findChanges'
+  gitDiff
+} from './find-changes'
+import {getContext} from './context'
 
 async function run(): Promise<void> {
   try {
