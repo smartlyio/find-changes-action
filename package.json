@@ -1,8 +1,8 @@
 {
-  "name": "typescript-action",
-  "version": "0.0.0",
+  "name": "find-changes-action",
+  "version": "1.1.0",
   "private": true,
-  "description": "TypeScript template action",
+  "description": "Find which subdirectories have changes for input into a matrix build",
   "main": "lib/main.js",
   "scripts": {
     "build": "tsc",
@@ -11,17 +11,16 @@
     "lint": "eslint src/**/*.ts",
     "package": "ncc build --source-map --license licenses.txt",
     "test": "jest",
-    "test:watch": "jest --watch",
-    "all": "npm run build && npm run format && npm run lint && npm run package && npm test"
+    "all": "npm run build && npm run format && npm run lint && npm run package && npm test",
+    "version": "npm run build && npm run package && git add -- dist"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/actions/typescript-action.git"
+    "url": "git+https://github.com/smartlyio/find-changes-action.git"
   },
   "keywords": [
     "actions",
-    "node",
-    "setup"
+    "matrix"
   ],
   "author": "",
   "license": "MIT",
@@ -31,17 +30,17 @@
   },
   "devDependencies": {
     "@types/jest": "27.0.1",
-    "@types/node": "16.7.6",
-    "@typescript-eslint/parser": "4.29.3",
-    "@vercel/ncc": "0.30.0",
+    "@types/node": "16.9.1",
+    "@typescript-eslint/parser": "4.31.1",
+    "@vercel/ncc": "0.31.1",
     "eslint": "7.32.0",
-    "eslint-plugin-github": "4.2.0",
+    "eslint-plugin-github": "4.3.0",
     "eslint-plugin-jest": "24.4.0",
-    "jest": "27.1.0",
-    "jest-circus": "27.1.0",
+    "jest": "27.2.0",
+    "jest-circus": "27.2.0",
     "js-yaml": "4.1.0",
-    "prettier": "2.1.1",
+    "prettier": "2.4.0",
     "ts-jest": "27.0.5",
-    "typescript": "4.3.5"
+    "typescript": "4.4.3"
   }
 }
