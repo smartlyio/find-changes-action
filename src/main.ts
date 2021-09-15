@@ -38,7 +38,7 @@ async function run(): Promise<void> {
     core.info(`Created matrix: ${matrixJson}`)
     core.setOutput('matrix', matrixJson)
   } catch (error) {
-    core.setFailed(error.message)
+    core.setFailed(`${error}`)
   }
 }
 
