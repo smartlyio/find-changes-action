@@ -200,7 +200,8 @@ function containsFileFilter(directory, filename) {
                 }
             }
             catch (e) {
-                if (e.code !== 'ENOENT') {
+                const err = e;
+                if (err.code !== 'ENOENT') {
                     throw e;
                 }
             }
@@ -277,13 +278,13 @@ const context_1 = __nccwpck_require__(842);
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            const context = yield context_1.getContext();
-            const diffBase = yield find_changes_1.getBranchPoint();
+            const context = yield (0, context_1.getContext)();
+            const diffBase = yield (0, find_changes_1.getBranchPoint)();
             core.info(`Using branch point of "${diffBase}" to determine changes`);
             core.setOutput('diff_base', diffBase);
-            const diffOutput = yield find_changes_1.gitDiff(diffBase);
-            const changedDirectories = yield find_changes_1.getChangedDirectories(diffOutput, context);
-            const directoryNames = yield find_changes_1.filterGitOutputByFile(changedDirectories, context);
+            const diffOutput = yield (0, find_changes_1.gitDiff)(diffBase);
+            const changedDirectories = yield (0, find_changes_1.getChangedDirectories)(diffOutput, context);
+            const directoryNames = yield (0, find_changes_1.filterGitOutputByFile)(changedDirectories, context);
             core.info(`Changed directories: ${directoryNames.join(' ')}`);
             core.setOutput('changed_directories', directoryNames.join(' '));
             if (directoryNames.length === 0) {
@@ -298,7 +299,7 @@ function run() {
             core.setOutput('matrix', matrixJson);
         }
         catch (error) {
-            core.setFailed(error.message);
+            core.setFailed(`${error}`);
         }
     });
 }
