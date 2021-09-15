@@ -9,6 +9,10 @@ interface GitResult {
   stderr: string
 }
 
+interface StatError {
+  code: string
+}
+
 async function execCommand(
   command: string,
   args: string[]
@@ -117,7 +121,8 @@ export async function containsFileFilter(
         return directoryPart
       }
     } catch (e) {
-      if (e.code !== 'ENOENT') {
+      const err = e as StatError
+      if (err.code !== 'ENOENT') {
         throw e
       }
     }
