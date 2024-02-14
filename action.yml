@@ -47,5 +47,5 @@ outputs:
   diff_base:
     description: "Git commit used as the base for finding pull request changes"
 runs:
-  using: 'node16'
+  using: 'node20'
   main: 'dist/index.js'
