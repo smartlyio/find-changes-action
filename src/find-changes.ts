@@ -44,7 +44,7 @@ export async function getBranchPoint(context: Context): Promise<string> {
     }
     const eventData: Buffer = await fs.readFile(eventPath)
     const event = JSON.parse(eventData.toString())
-    if (context.fromOriginalBranchPoint && event && event.sha && event.ref) {
+    if (!context.fromOriginalBranchPoint && event && event.sha && event.ref) {
       const ref: string = event.ref
       if (!ref.match(/^refs\/pull\/[0-9]+\/merge$/)) {
         throw new Error(
@@ -54,7 +54,7 @@ export async function getBranchPoint(context: Context): Promise<string> {
       core.info(`Found branch point ${event.sha}`)
       return event.sha as string
     } else if (
-      !context.fromOriginalBranchPoint &&
+      context.fromOriginalBranchPoint &&
       event &&
       event.pull_request &&
       event.pull_request.base &&
