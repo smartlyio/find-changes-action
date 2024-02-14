@@ -33,7 +33,7 @@ async function execCommand(
   return {stdout, stderr}
 }
 
-export async function getBranchPoint(): Promise<string> {
+export async function getBranchPoint(context: Context): Promise<string> {
   if (process.env['GITHUB_EVENT_NAME'] === 'pull_request') {
     const eventPath = process.env['GITHUB_EVENT_PATH']
     core.info(`Reading event from ${eventPath}`)
@@ -44,7 +44,17 @@ export async function getBranchPoint(): Promise<string> {
     }
     const eventData: Buffer = await fs.readFile(eventPath)
     const event = JSON.parse(eventData.toString())
-    if (
+    if (context.fromOriginalBranchPoint && event && event.sha && event.ref) {
+      const ref: string = event.ref
+      if (!ref.match(/^refs\/pull\/[0-9]+\/merge$/)) {
+        throw new Error(
+          `${event.ref} does not look like a merge of the main branch into this pull request!`
+        )
+      }
+      core.info(`Found branch point ${event.sha}`)
+      return event.sha as string
+    } else if (
+      !context.fromOriginalBranchPoint &&
       event &&
       event.pull_request &&
       event.pull_request.base &&

@@ -10,7 +10,7 @@ import {getContext} from './context'
 async function run(): Promise<void> {
   try {
     const context = await getContext()
-    const diffBase = await getBranchPoint()
+    const diffBase = await getBranchPoint(context)
     core.info(`Using branch point of "${diffBase}" to determine changes`)
     core.setOutput('diff_base', diffBase)
 
