@@ -45,7 +45,9 @@ describe('get branch point', () => {
       directoryLevels: null,
       exclude: /^\.github\/.*/ // Not used by getChangedDirectories
     }
-    await expect(getBranchPoint(context)).rejects.toThrow(/only works on pull_request/)
+    await expect(getBranchPoint(context)).rejects.toThrow(
+      /only works on pull_request/
+    )
   })
 
   test('wrong GITHUB_EVENT_NAME', async () => {
@@ -56,7 +58,9 @@ describe('get branch point', () => {
       directoryLevels: null,
       exclude: /^\.github\/.*/ // Not used by getChangedDirectories
     }
-    await expect(getBranchPoint(context)).rejects.toThrow(/only works on pull_request/)
+    await expect(getBranchPoint(context)).rejects.toThrow(
+      /only works on pull_request/
+    )
   })
 
   test('missing GITHUB_EVENT_PATH', async () => {
