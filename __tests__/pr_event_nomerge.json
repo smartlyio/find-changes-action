@@ -1,6 +1,6 @@
 {
-  "sha": "pr_merge_sha",
-  "ref": "refs/pull/1234/merge",
+  "sha": "pr_head_sha",
+  "ref": "refs/heads/my-pr-branch",
   "pull_request": {
     "base": {
       "sha": "pull_request_sha"
