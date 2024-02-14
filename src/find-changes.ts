@@ -47,14 +47,17 @@ export async function getBranchPoint(context: Context): Promise<string> {
     if (event && event.pull_request) {
       if (
         !context.fromOriginalBranchPoint &&
-        event.pull_request.repository &&
-        event.pull_request.repository.default_branch
+        event &&
+        event.repository &&
+        event.repository.default_branch
       ) {
-        const upstream = `origin/${event.pull_request.repository.default_branch}`
+        const upstream = `origin/${event.repository.default_branch}`
         core.info(`Found branch point ${upstream}`)
         return upstream
       } else if (
         context.fromOriginalBranchPoint &&
+        event &&
+        event.pull_request &&
         event.pull_request.base &&
         event.pull_request.base.sha
       ) {

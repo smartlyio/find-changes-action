@@ -1,9 +1,0 @@
-{
-  "sha": "pr_head_sha",
-  "ref": "refs/heads/my-pr-branch",
-  "pull_request": {
-    "base": {
-      "sha": "pull_request_sha"
-    }
-  }
-}

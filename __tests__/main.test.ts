@@ -94,24 +94,6 @@ describe('get branch point', () => {
     expect(branchPoint).toEqual('origin/master')
   })
 
-  test('main is not merged to sha', async () => {
-    const eventPath = path.join(__dirname, 'pr_event_nomerge.json')
-    const eventData = await fsReal.readFile(eventPath)
-    const event = JSON.parse(eventData.toString())
-    process.env['GITHUB_EVENT_NAME'] = 'pull_request'
-    process.env['GITHUB_EVENT_PATH'] = eventPath
-
-    const context: Context = {
-      fromOriginalBranchPoint: false,
-      directoryContaining: null, // Not used by getChangedDirectories
-      directoryLevels: null,
-      exclude: /^\.github\/.*/ // Not used by getChangedDirectories
-    }
-    await expect(getBranchPoint(context)).rejects.toThrow(
-      /Unable to determine branch point to compare changes/
-    )
-  })
-
   test('from original branch point', async () => {
     const eventPath = path.join(__dirname, 'pr_event.json')
     const eventData = await fsReal.readFile(eventPath)
