@@ -44,28 +44,27 @@ export async function getBranchPoint(context: Context): Promise<string> {
     }
     const eventData: Buffer = await fs.readFile(eventPath)
     const event = JSON.parse(eventData.toString())
-    if (!context.fromOriginalBranchPoint && event && event.sha && event.ref) {
-      const ref: string = event.ref
-      if (!ref.match(/^refs\/pull\/[0-9]+\/merge$/)) {
-        throw new Error(
-          `${event.ref} does not look like a merge of the main branch into this pull request!`
-        )
+    if (event && event.pull_request) {
+      if (
+        !context.fromOriginalBranchPoint &&
+        event.pull_request.repository &&
+        event.pull_request.repository.default_branch
+      ) {
+        const upstream = `origin/${event.pull_request.repository.default_branch}`
+        core.info(`Found branch point ${upstream}`)
+        return upstream
+      } else if (
+        context.fromOriginalBranchPoint &&
+        event.pull_request.base &&
+        event.pull_request.base.sha
+      ) {
+        core.info(`Found branch point ${event.pull_request.base.sha}`)
+        return event.pull_request.base.sha as string
+      } else {
+        throw new Error('Unable to determine branch point to compare changes.')
       }
-      core.info(`Found branch point ${event.sha}`)
-      return event.sha as string
-    } else if (
-      context.fromOriginalBranchPoint &&
-      event &&
-      event.pull_request &&
-      event.pull_request.base &&
-      event.pull_request.base.sha
-    ) {
-      core.info(`Found branch point ${event.pull_request.base.sha}`)
-      return event.pull_request.base.sha as string
     } else {
-      throw new Error(
-        'Event payload does not provide the HEAD SHA. Unable to determine branch point to compare changes.'
-      )
+      throw new Error('Event payload does not provide the pull request data.')
     }
   } else {
     throw new Error('find-changed-packages only works on pull_request events')

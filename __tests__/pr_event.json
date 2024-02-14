@@ -1,7 +1,8 @@
 {
-  "sha": "pr_merge_sha",
-  "ref": "refs/pull/1234/merge",
   "pull_request": {
+    "repository": {
+      "default_branch": "master"
+    },
     "base": {
       "sha": "pull_request_sha"
     }

@@ -91,7 +91,7 @@ describe('get branch point', () => {
       exclude: /^\.github\/.*/ // Not used by getChangedDirectories
     }
     const branchPoint = await getBranchPoint(context)
-    expect(branchPoint).toEqual(event.sha)
+    expect(branchPoint).toEqual('origin/master')
   })
 
   test('main is not merged to sha', async () => {
@@ -108,7 +108,7 @@ describe('get branch point', () => {
       exclude: /^\.github\/.*/ // Not used by getChangedDirectories
     }
     await expect(getBranchPoint(context)).rejects.toThrow(
-      /refs\/heads\/[^ ]+ does not look like a merge/
+      /Unable to determine branch point to compare changes/
     )
   })
 
