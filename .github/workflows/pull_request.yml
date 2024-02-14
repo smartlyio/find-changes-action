@@ -1,18 +1,21 @@
-name: Build and release the action
+name: "Pull Request"
 
 on:
-  push:
+  pull_request:
     branches: [master]
 
 jobs:
-  @import ./jobs/build
+  build:
+    name: Build
+    uses: ./.github/workflows/build.yml
+    secrets: inherit
 
   release:
-    runs-on: <%= ubuntu_version %>
+    runs-on: ubuntu-22.04
     name: "Build and release action"
-    needs: [build]
+    needs: [build, test]
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
         with:
           fetch-depth: 0
           persist-credentials: true
@@ -21,4 +24,5 @@ jobs:
       - name: Release flow
         uses: smartlyio/github-actions@release-action-node-v1
         with:
+          dry_run: true
           token: "${{ secrets.GITHUB_TOKEN }}"
