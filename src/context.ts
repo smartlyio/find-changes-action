@@ -4,12 +4,15 @@ export interface Context {
   directoryContaining: string | null
   directoryLevels: number | null
   exclude: RegExp
+  fromOriginalBranchPoint: boolean
 }
 
 export async function getContext(): Promise<Context> {
   const directoryContainingRaw = core.getInput('directory_containing')
   const directoryLevelsRaw = core.getInput('directory_levels')
   const exclude: string = core.getInput('exclude')
+  const fromOriginalBranchPoint: boolean =
+    core.getInput('exclude').toLowerCase() === 'true'
 
   const directoryLevels: number | null =
     directoryLevelsRaw === '' ? null : parseInt(directoryLevelsRaw)
@@ -29,7 +32,8 @@ export async function getContext(): Promise<Context> {
   const context: Context = {
     directoryContaining,
     directoryLevels,
-    exclude: new RegExp(exclude)
+    exclude: new RegExp(exclude),
+    fromOriginalBranchPoint
   }
   return context
 }

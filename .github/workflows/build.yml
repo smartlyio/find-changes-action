@@ -1,17 +1,7 @@
-# IMPORTANT NOTE/WARNING!
-# Do not make changes to this file, your changes will be overwritten.
-#
-# This file is automagically generated from:
-# - .github/templates/pull_request.yml.erb
-# - Templates contained in the smartlyio/github-actions-templates repository
-#
-# This file can be updated by editing the template file, and running `devbox render workflows`
-
-name: "Pull Request"
+name: Build
 
 on:
-  pull_request:
-    branches: [master]
+  workflow_call:
 
 jobs:
   build:
@@ -45,10 +35,10 @@ jobs:
     - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
       with:
         fetch-depth: 0
-    - name: Set Node.js 16.x
+    - name: Set Node.js 20.x
       uses: actions/setup-node@v4
       with:
-        node-version: 16.x
+        node-version: 20.x
     - name: "Build action for test"
       run: |
         npm install
@@ -63,20 +53,3 @@ jobs:
       uses: ./.
       with:
         directory_containing: main.ts
-
-  release:
-    runs-on: ubuntu-22.04
-    name: "Build and release action"
-    needs: [build, test]
-    steps:
-      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
-        with:
-          fetch-depth: 0
-          persist-credentials: true
-      - name: Configure git
-        uses: smartlyio/github-actions@git-init-userinfo-v1
-      - name: Release flow
-        uses: smartlyio/github-actions@release-action-node-v1
-        with:
-          dry_run: true
-          token: "${{ secrets.GITHUB_TOKEN }}"

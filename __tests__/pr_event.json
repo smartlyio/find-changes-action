@@ -1,4 +1,7 @@
 {
+  "repository": {
+    "default_branch": "master"
+  },
   "pull_request": {
     "base": {
       "sha": "pull_request_sha"
