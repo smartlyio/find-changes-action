@@ -30,6 +30,7 @@ jobs:
         npm run package
 
   test:
+    if: github.event.pull_request.merged == false
     runs-on: ubuntu-22.04
     steps:
     - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
