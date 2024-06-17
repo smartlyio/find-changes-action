@@ -34,43 +34,42 @@ async function execCommand(
 }
 
 export async function getBranchPoint(context: Context): Promise<string> {
-  if (process.env['GITHUB_EVENT_NAME'] === 'pull_request') {
-    const eventPath = process.env['GITHUB_EVENT_PATH']
-    core.info(`Reading event from ${eventPath}`)
-    if (!eventPath) {
-      throw new Error(
-        'Could not find event payload file to determine branch point.'
-      )
-    }
-    const eventData: Buffer = await fs.readFile(eventPath)
-    const event = JSON.parse(eventData.toString())
-    if (event && event.pull_request) {
-      if (
-        !context.fromOriginalBranchPoint &&
-        event &&
-        event.repository &&
-        event.repository.default_branch
-      ) {
-        const upstream = `origin/${event.repository.default_branch}`
-        core.info(`Found branch point ${upstream}`)
-        return upstream
-      } else if (
-        context.fromOriginalBranchPoint &&
-        event &&
-        event.pull_request &&
-        event.pull_request.base &&
-        event.pull_request.base.sha
-      ) {
-        core.info(`Found branch point ${event.pull_request.base.sha}`)
-        return event.pull_request.base.sha as string
-      } else {
-        throw new Error('Unable to determine branch point to compare changes.')
-      }
+  if (process.env['GITHUB_EVENT_NAME'] !== 'pull_request') {
+    throw new Error('find-changed-packages only works on pull_request events')
+  }
+  const eventPath = process.env['GITHUB_EVENT_PATH']
+  core.info(`Reading event from ${eventPath}`)
+  if (!eventPath) {
+    throw new Error(
+      'Could not find event payload file to determine branch point.'
+    )
+  }
+  const eventData: Buffer = await fs.readFile(eventPath)
+  const event = JSON.parse(eventData.toString())
+  if (event && event.pull_request) {
+    if (
+      !context.fromOriginalBranchPoint &&
+      event &&
+      event.repository &&
+      event.repository.default_branch
+    ) {
+      const upstream = `origin/${event.repository.default_branch}`
+      core.info(`Found branch point ${upstream}`)
+      return upstream
+    } else if (
+      context.fromOriginalBranchPoint &&
+      event &&
+      event.pull_request &&
+      event.pull_request.base &&
+      event.pull_request.base.sha
+    ) {
+      core.info(`Found branch point ${event.pull_request.base.sha}`)
+      return event.pull_request.base.sha as string
     } else {
-      throw new Error('Event payload does not provide the pull request data.')
+      throw new Error('Unable to determine branch point to compare changes.')
     }
   } else {
-    throw new Error('find-changed-packages only works on pull_request events')
+    throw new Error('Event payload does not provide the pull request data.')
   }
 }
 
