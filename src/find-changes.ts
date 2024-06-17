@@ -46,30 +46,29 @@ export async function getBranchPoint(context: Context): Promise<string> {
   }
   const eventData: Buffer = await fs.readFile(eventPath)
   const event = JSON.parse(eventData.toString())
-  if (event) {
-    switch (context.fromOriginalBranchPoint) {
-      case false:
-        if (event.repository && event.repository.default_branch) {
-          const upstream = `origin/${event.repository.default_branch}`
-          core.info(`Found branch point ${upstream}`)
-          return upstream
-        }
-        break
-      case true:
-        if (
-          event.pull_request &&
-          event.pull_request.base &&
-          event.pull_request.base.sha
-        ) {
-          core.info(`Found branch point ${event.pull_request.base.sha}`)
-          return event.pull_request.base.sha as string
-        }
-        break
-      default:
-        throw new Error('Unable to determine branch point to compare changes.')
-    }
-  } else {
+  if (!event) {
     throw new Error('Event payload does not provide the pull request data.')
+  }
+  switch (context.fromOriginalBranchPoint) {
+    case false:
+      if (event.repository && event.repository.default_branch) {
+        const upstream = `origin/${event.repository.default_branch}`
+        core.info(`Found branch point ${upstream}`)
+        return upstream
+      }
+      break
+    case true:
+      if (
+        event.pull_request &&
+        event.pull_request.base &&
+        event.pull_request.base.sha
+      ) {
+        core.info(`Found branch point ${event.pull_request.base.sha}`)
+        return event.pull_request.base.sha as string
+      }
+      break
+    default:
+      throw new Error('Unable to determine branch point to compare changes.')
   }
 }
 
