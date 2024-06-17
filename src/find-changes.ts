@@ -39,8 +39,12 @@ export async function getBranchPoint(context: Context): Promise<string> {
   switch (eventName as string) {
     case 'pull_request':
       return handlePullRequest(context)
+    case 'push':
+      return handlePush()
   }
-  throw new Error('find-changed-packages only works on pull_request events')
+  throw new Error(
+    'find-changed-packages only works on pull_request and push events'
+  )
 }
 
 async function handlePullRequest(context: Context): Promise<string> {
@@ -65,6 +69,17 @@ async function handlePullRequest(context: Context): Promise<string> {
         return event.pull_request.base.sha as string
       }
       break
+  }
+  throw new Error(
+    'Unable to determine pull request branch point to compare changes.'
+  )
+}
+
+async function handlePush(): Promise<string> {
+  const event = await getEvent()
+  if (event.before) {
+    core.info(`Found branch point ${event.before}`)
+    return event.before as string
   }
   throw new Error(
     'Unable to determine pull request branch point to compare changes.'
