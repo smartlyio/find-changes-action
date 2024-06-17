@@ -51,7 +51,7 @@ describe('get branch point', () => {
   })
 
   test('wrong GITHUB_EVENT_NAME', async () => {
-    process.env['GITHUB_EVENT_NAME'] = 'push'
+    process.env['GITHUB_EVENT_NAME'] = 'schedule'
     const context: Context = {
       fromOriginalBranchPoint: false,
       directoryContaining: null, // Not used by getChangedDirectories
