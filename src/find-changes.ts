@@ -49,6 +49,11 @@ export async function getBranchPoint(context: Context): Promise<string> {
 
 async function handlePullRequest(context: Context): Promise<string> {
   const event = await getEvent()
+  if (event.action === 'closed') {
+    throw new Error(
+      'Running find-changes on: pull_request: closed is not supported in v2 - please migrate workflow to on: push:'
+    )
+  }
   const BRANCH = true
   const MASTER = false
   switch (context.fromOriginalBranchPoint) {
