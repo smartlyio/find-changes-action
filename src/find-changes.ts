@@ -34,22 +34,17 @@ async function execCommand(
 }
 
 export async function getBranchPoint(context: Context): Promise<string> {
-  if (process.env['GITHUB_EVENT_NAME'] !== 'pull_request') {
-    throw new Error('find-changed-packages only works on pull_request events')
-  }
-  const eventPath = process.env['GITHUB_EVENT_PATH']
-  core.info(`Reading event from ${eventPath}`)
-  if (!eventPath) {
-    throw new Error(
-      'Could not find event payload file to determine branch point.'
-    )
-  }
-  const eventData: Buffer = await fs.readFile(eventPath)
-  const event = JSON.parse(eventData.toString())
-  if (!event) {
-    throw new Error('Event payload does not provide the pull request data.')
-  }
+  const eventName = process.env['GITHUB_EVENT_NAME']
 
+  switch (eventName as string) {
+    case 'pull_request':
+      return handlePullRequest(context)
+  }
+  throw new Error('find-changed-packages only works on pull_request events')
+}
+
+async function handlePullRequest(context: Context): Promise<string> {
+  const event = await getEvent()
   const BRANCH = true
   const MASTER = false
   switch (context.fromOriginalBranchPoint) {
@@ -71,7 +66,26 @@ export async function getBranchPoint(context: Context): Promise<string> {
       }
       break
   }
-  throw new Error('Unable to determine branch point to compare changes.')
+  throw new Error(
+    'Unable to determine pull request branch point to compare changes.'
+  )
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function getEvent(): Promise<any> {
+  const eventPath = process.env['GITHUB_EVENT_PATH']
+  core.info(`Reading event from ${eventPath}`)
+  if (!eventPath) {
+    throw new Error(
+      'Could not find event payload file to determine branch point.'
+    )
+  }
+  const eventData: Buffer = await fs.readFile(eventPath)
+  const event = JSON.parse(eventData.toString())
+  if (!event) {
+    throw new Error('Event payload does not provide data.')
+  }
+  return event
 }
 
 export async function gitDiff(diffBase: string): Promise<string> {
