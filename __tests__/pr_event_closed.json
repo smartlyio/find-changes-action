@@ -1,0 +1,12 @@
+{
+    "repository": {
+      "default_branch": "master"
+    },
+    "action": "closed",
+    "pull_request": {
+      "base": {
+        "sha": "pull_request_sha"
+      }
+    }
+  }
+  

@@ -77,6 +77,24 @@ describe('get branch point', () => {
     )
   })
 
+  test('pull request event type closed', async () => {
+    const eventPath = path.join(__dirname, 'pr_event_closed.json')
+    const eventData = await fsReal.readFile(eventPath)
+    const event = JSON.parse(eventData.toString())
+    process.env['GITHUB_EVENT_NAME'] = 'pull_request'
+    process.env['GITHUB_EVENT_PATH'] = eventPath
+
+    const context: Context = {
+      fromOriginalBranchPoint: false,
+      directoryContaining: null, // Not used by getChangedDirectories
+      directoryLevels: null,
+      exclude: /^\.github\/.*/ // Not used by getChangedDirectories
+    }
+    await expect(getBranchPoint(context)).rejects.toThrow(
+      /Running find-changes on: pull_request: closed is not supported in v2 - please migrate workflow to on: push:/
+    )
+  })
+
   test('get sha of main merged to PR', async () => {
     const eventPath = path.join(__dirname, 'pr_event.json')
     const eventData = await fsReal.readFile(eventPath)
@@ -109,6 +127,23 @@ describe('get branch point', () => {
     }
     const branchPoint = await getBranchPoint(context)
     expect(branchPoint).toEqual(event.pull_request.base.sha)
+  })
+
+  test('on push', async () => {
+    const eventPath = path.join(__dirname, 'push_event.json')
+    const eventData = await fsReal.readFile(eventPath)
+    const event = JSON.parse(eventData.toString())
+    process.env['GITHUB_EVENT_NAME'] = 'push'
+    process.env['GITHUB_EVENT_PATH'] = eventPath
+
+    const context: Context = {
+      fromOriginalBranchPoint: false, // Doesn't matter for push events
+      directoryContaining: null, // Not used by getChangedDirectories
+      directoryLevels: null,
+      exclude: /^\.github\/.*/ // Not used by getChangedDirectories
+    }
+    const branchPoint = await getBranchPoint(context)
+    expect(branchPoint).toEqual(event.before)
   })
 })
 

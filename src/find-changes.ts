@@ -86,9 +86,7 @@ async function handlePush(): Promise<string> {
     core.info(`Found branch point ${event.before}`)
     return event.before as string
   }
-  throw new Error(
-    'Unable to determine pull request branch point to compare changes.'
-  )
+  throw new Error('Unable to determine push branch point to compare changes.')
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

@@ -1,0 +1,8 @@
+{
+    "repository": {
+      "default_branch": "master"
+    },
+    "action": "closed",
+    "before": "push_sha"
+  }
+  
