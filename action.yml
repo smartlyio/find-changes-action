@@ -9,7 +9,7 @@ inputs:
       The default is to find changes relative to the *current* main
       branch, after merging the main branch into this PR.
     required: false
-    default: false
+    default: 'false'
   directory_containing:
     description: >-
       Find changes to directories containing a file with this name.
