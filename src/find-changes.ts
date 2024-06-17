@@ -46,7 +46,7 @@ export async function getBranchPoint(context: Context): Promise<string> {
   }
   const eventData: Buffer = await fs.readFile(eventPath)
   const event = JSON.parse(eventData.toString())
-  if (event && event.pull_request) {
+  if (event) {
     if (
       !context.fromOriginalBranchPoint &&
       event &&
