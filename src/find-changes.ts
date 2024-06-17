@@ -49,7 +49,6 @@ export async function getBranchPoint(context: Context): Promise<string> {
   if (event) {
     if (
       !context.fromOriginalBranchPoint &&
-      event &&
       event.repository &&
       event.repository.default_branch
     ) {
@@ -58,7 +57,6 @@ export async function getBranchPoint(context: Context): Promise<string> {
       return upstream
     } else if (
       context.fromOriginalBranchPoint &&
-      event &&
       event.pull_request &&
       event.pull_request.base &&
       event.pull_request.base.sha
