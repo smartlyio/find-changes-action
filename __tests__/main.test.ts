@@ -39,40 +39,19 @@ afterEach(() => {
 describe('get branch point', () => {
   test('missing GITHUB_EVENT_NAME', async () => {
     delete process.env['GITHUB_EVENT_NAME']
-    const context: Context = {
-      fromOriginalBranchPoint: false,
-      directoryContaining: null, // Not used by getChangedDirectories
-      directoryLevels: null,
-      exclude: /^\.github\/.*/ // Not used by getChangedDirectories
-    }
-    await expect(getBranchPoint(context)).rejects.toThrow(
-      /only works on pull_request/
-    )
+    await expect(getBranchPoint()).rejects.toThrow(/only works on pull_request/)
   })
 
   test('wrong GITHUB_EVENT_NAME', async () => {
     process.env['GITHUB_EVENT_NAME'] = 'schedule'
-    const context: Context = {
-      fromOriginalBranchPoint: false,
-      directoryContaining: null, // Not used by getChangedDirectories
-      directoryLevels: null,
-      exclude: /^\.github\/.*/ // Not used by getChangedDirectories
-    }
-    await expect(getBranchPoint(context)).rejects.toThrow(
-      /only works on pull_request/
-    )
+
+    await expect(getBranchPoint()).rejects.toThrow(/only works on pull_request/)
   })
 
   test('missing GITHUB_EVENT_PATH', async () => {
     process.env['GITHUB_EVENT_NAME'] = 'pull_request'
     delete process.env['GITHUB_EVENT_PATH']
-    const context: Context = {
-      fromOriginalBranchPoint: false,
-      directoryContaining: null, // Not used by getChangedDirectories
-      directoryLevels: null,
-      exclude: /^\.github\/.*/ // Not used by getChangedDirectories
-    }
-    await expect(getBranchPoint(context)).rejects.toThrow(
+    await expect(getBranchPoint()).rejects.toThrow(
       /Could not find event payload/
     )
   })
@@ -84,13 +63,7 @@ describe('get branch point', () => {
     process.env['GITHUB_EVENT_NAME'] = 'pull_request'
     process.env['GITHUB_EVENT_PATH'] = eventPath
 
-    const context: Context = {
-      fromOriginalBranchPoint: false,
-      directoryContaining: null, // Not used by getChangedDirectories
-      directoryLevels: null,
-      exclude: /^\.github\/.*/ // Not used by getChangedDirectories
-    }
-    await expect(getBranchPoint(context)).rejects.toThrow(
+    await expect(getBranchPoint()).rejects.toThrow(
       /Running find-changes on: pull_request: closed is not supported in v2 - please migrate workflow to on: push:/
     )
   })
@@ -102,31 +75,8 @@ describe('get branch point', () => {
     process.env['GITHUB_EVENT_NAME'] = 'pull_request'
     process.env['GITHUB_EVENT_PATH'] = eventPath
 
-    const context: Context = {
-      fromOriginalBranchPoint: false,
-      directoryContaining: null, // Not used by getChangedDirectories
-      directoryLevels: null,
-      exclude: /^\.github\/.*/ // Not used by getChangedDirectories
-    }
-    const branchPoint = await getBranchPoint(context)
+    const branchPoint = await getBranchPoint()
     expect(branchPoint).toEqual('origin/master')
-  })
-
-  test('from original branch point', async () => {
-    const eventPath = path.join(__dirname, 'pr_event.json')
-    const eventData = await fsReal.readFile(eventPath)
-    const event = JSON.parse(eventData.toString())
-    process.env['GITHUB_EVENT_NAME'] = 'pull_request'
-    process.env['GITHUB_EVENT_PATH'] = eventPath
-
-    const context: Context = {
-      fromOriginalBranchPoint: true,
-      directoryContaining: null, // Not used by getChangedDirectories
-      directoryLevels: null,
-      exclude: /^\.github\/.*/ // Not used by getChangedDirectories
-    }
-    const branchPoint = await getBranchPoint(context)
-    expect(branchPoint).toEqual(event.pull_request.base.sha)
   })
 
   test('on push', async () => {
@@ -136,13 +86,7 @@ describe('get branch point', () => {
     process.env['GITHUB_EVENT_NAME'] = 'push'
     process.env['GITHUB_EVENT_PATH'] = eventPath
 
-    const context: Context = {
-      fromOriginalBranchPoint: false, // Doesn't matter for push events
-      directoryContaining: null, // Not used by getChangedDirectories
-      directoryLevels: null,
-      exclude: /^\.github\/.*/ // Not used by getChangedDirectories
-    }
-    const branchPoint = await getBranchPoint(context)
+    const branchPoint = await getBranchPoint()
     expect(branchPoint).toEqual(event.before)
   })
 })
@@ -164,7 +108,6 @@ deeply/nested/package/README
 top-level-file
 `
     const context: Context = {
-      fromOriginalBranchPoint: false,
       directoryContaining: null, // Not used by getChangedDirectories
       directoryLevels: null,
       exclude: /^\.github\/.*/ // Not used by getChangedDirectories
@@ -196,7 +139,6 @@ deeply/nested/package/README
 top-level-file
 `
     const context: Context = {
-      fromOriginalBranchPoint: false,
       directoryContaining: null,
       directoryLevels: 1,
       exclude: /^\.github\/.*/ // Not used by getChangedDirectories
@@ -228,7 +170,6 @@ deeply/nested/package/README
 top-level-file
 `
     const context: Context = {
-      fromOriginalBranchPoint: false,
       directoryContaining: null,
       directoryLevels: 2,
       exclude: /^\.github\/.*/ // Not used by getChangedDirectories
@@ -263,7 +204,6 @@ deeply/nested/package/README
 top-level-file
 `
     const context: Context = {
-      fromOriginalBranchPoint: false,
       directoryContaining: null, // Not used by getChangedDirectories
       directoryLevels: null,
       exclude: /^\.github\/.*/ // Not used by getChangedDirectories
@@ -324,7 +264,6 @@ describe('filterGitOutputByFile', () => {
     ]
     const expected = ['package1', 'package2', 'nested', 'deeply']
     const context: Context = {
-      fromOriginalBranchPoint: false,
       directoryContaining: null,
       directoryLevels: null,
       exclude: /^\.github($|\/.*)/
@@ -342,7 +281,6 @@ describe('filterGitOutputByFile', () => {
     ]
     const expected = ['nested/package', 'deeply/nested']
     const context: Context = {
-      fromOriginalBranchPoint: false,
       directoryContaining: null,
       directoryLevels: null,
       exclude: /^\.github($|\/.*)/
@@ -356,7 +294,6 @@ describe('filterGitOutputByFile', () => {
     const changedDirectories = ['__tests__', 'deeply/nested', '.github/actions']
     const expected = ['__tests__']
     const context: Context = {
-      fromOriginalBranchPoint: false,
       directoryContaining: 'pr_event.json',
       directoryLevels: null,
       exclude: /^\.github($|\/.*)/

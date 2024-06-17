@@ -2,14 +2,6 @@ name: 'Find changed directories'
 description: 'Create matrix expression to build only changed packages'
 author: 'Smartly.io'
 inputs:
-  from-original-branch-point:
-    description: >-
-      Find the changes from the original branch point.
-
-      The default is to find changes relative to the *current* main
-      branch, after merging the main branch into this PR.
-    required: false
-    default: 'false'
   directory_containing:
     description: >-
       Find changes to directories containing a file with this name.

@@ -33,12 +33,12 @@ async function execCommand(
   return {stdout, stderr}
 }
 
-export async function getBranchPoint(context: Context): Promise<string> {
+export async function getBranchPoint(): Promise<string> {
   const eventName = process.env['GITHUB_EVENT_NAME']
 
   switch (eventName as string) {
     case 'pull_request':
-      return handlePullRequest(context)
+      return handlePullRequest()
     case 'push':
       return handlePush()
   }
@@ -47,33 +47,17 @@ export async function getBranchPoint(context: Context): Promise<string> {
   )
 }
 
-async function handlePullRequest(context: Context): Promise<string> {
+async function handlePullRequest(): Promise<string> {
   const event = await getEvent()
   if (event.action === 'closed') {
     throw new Error(
       'Running find-changes on: pull_request: closed is not supported in v2 - please migrate workflow to on: push:'
     )
   }
-  const BRANCH = true
-  const MASTER = false
-  switch (context.fromOriginalBranchPoint) {
-    case MASTER:
-      if (event.repository && event.repository.default_branch) {
-        const upstream = `origin/${event.repository.default_branch}`
-        core.info(`Found branch point ${upstream}`)
-        return upstream
-      }
-      break
-    case BRANCH:
-      if (
-        event.pull_request &&
-        event.pull_request.base &&
-        event.pull_request.base.sha
-      ) {
-        core.info(`Found branch point ${event.pull_request.base.sha}`)
-        return event.pull_request.base.sha as string
-      }
-      break
+  if (event.repository && event.repository.default_branch) {
+    const upstream = `origin/${event.repository.default_branch}`
+    core.info(`Found branch point ${upstream}`)
+    return upstream
   }
   throw new Error(
     'Unable to determine pull request branch point to compare changes.'
