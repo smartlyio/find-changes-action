@@ -1,16 +1,13 @@
-name: Build and release the action
+name: Master Push
 
-# smartlyio/find-changes-action@v1 (under Release flow) only works on pull_request events is the reason for not using "on: push: branches: master"
 on:
-  pull_request:
-    branches: [master]
-    types: [closed]
+  push:
+    branches:
+      - master
 
 jobs:
   build:
     name: Build
-    # Only run when PR is closed AND merged, not when PR is just closed.
-    if: github.event.pull_request.merged
     uses: ./.github/workflows/build.yml
     secrets: inherit
 

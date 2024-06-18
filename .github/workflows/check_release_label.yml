@@ -17,4 +17,3 @@ jobs:
     - uses: smartlyio/check-versioning-action@v5
       with:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
