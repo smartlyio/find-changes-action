@@ -46,7 +46,6 @@ function getContext() {
         const directoryContainingRaw = core.getInput('directory_containing');
         const directoryLevelsRaw = core.getInput('directory_levels');
         const exclude = core.getInput('exclude');
-        const fromOriginalBranchPoint = core.getInput('exclude').toLowerCase() === 'true';
         const directoryLevels = directoryLevelsRaw === '' ? null : parseInt(directoryLevelsRaw);
         const directoryContaining = directoryContainingRaw === '' ? null : directoryContainingRaw;
         if (!directoryLevels && !directoryContaining) {
@@ -58,8 +57,7 @@ function getContext() {
         const context = {
             directoryContaining,
             directoryLevels,
-            exclude: new RegExp(exclude),
-            fromOriginalBranchPoint
+            exclude: new RegExp(exclude)
         };
         return context;
     });
@@ -130,47 +128,59 @@ function execCommand(command, args) {
         return { stdout, stderr };
     });
 }
-function getBranchPoint(context) {
+function getBranchPoint() {
     return __awaiter(this, void 0, void 0, function* () {
-        if (process.env['GITHUB_EVENT_NAME'] === 'pull_request') {
-            const eventPath = process.env['GITHUB_EVENT_PATH'];
-            core.info(`Reading event from ${eventPath}`);
-            if (!eventPath) {
-                throw new Error('Could not find event payload file to determine branch point.');
-            }
-            const eventData = yield fs_1.promises.readFile(eventPath);
-            const event = JSON.parse(eventData.toString());
-            if (event && event.pull_request) {
-                if (!context.fromOriginalBranchPoint &&
-                    event &&
-                    event.repository &&
-                    event.repository.default_branch) {
-                    const upstream = `origin/${event.repository.default_branch}`;
-                    core.info(`Found branch point ${upstream}`);
-                    return upstream;
-                }
-                else if (context.fromOriginalBranchPoint &&
-                    event &&
-                    event.pull_request &&
-                    event.pull_request.base &&
-                    event.pull_request.base.sha) {
-                    core.info(`Found branch point ${event.pull_request.base.sha}`);
-                    return event.pull_request.base.sha;
-                }
-                else {
-                    throw new Error('Unable to determine branch point to compare changes.');
-                }
-            }
-            else {
-                throw new Error('Event payload does not provide the pull request data.');
-            }
+        const eventName = process.env['GITHUB_EVENT_NAME'];
+        switch (eventName) {
+            case 'pull_request':
+                return handlePullRequest();
+            case 'push':
+                return handlePush();
         }
-        else {
-            throw new Error('find-changed-packages only works on pull_request events');
-        }
+        throw new Error('find-changed-packages only works on pull_request and push events');
     });
 }
 exports.getBranchPoint = getBranchPoint;
+function handlePullRequest() {
+    return __awaiter(this, void 0, void 0, function* () {
+        const event = yield getEvent();
+        if (event.action === 'closed') {
+            throw new Error('Running find-changes on: pull_request: closed is not supported in v2 - please migrate workflow to on: push:');
+        }
+        if (event.repository && event.repository.default_branch) {
+            const upstream = `origin/${event.repository.default_branch}`;
+            core.info(`Found branch point ${upstream}`);
+            return upstream;
+        }
+        throw new Error('Unable to determine pull request branch point to compare changes.');
+    });
+}
+function handlePush() {
+    return __awaiter(this, void 0, void 0, function* () {
+        const event = yield getEvent();
+        if (event.before) {
+            core.info(`Found branch point ${event.before}`);
+            return event.before;
+        }
+        throw new Error('Unable to determine push branch point to compare changes.');
+    });
+}
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function getEvent() {
+    return __awaiter(this, void 0, void 0, function* () {
+        const eventPath = process.env['GITHUB_EVENT_PATH'];
+        core.info(`Reading event from ${eventPath}`);
+        if (!eventPath) {
+            throw new Error('Could not find event payload file to determine branch point.');
+        }
+        const eventData = yield fs_1.promises.readFile(eventPath);
+        const event = JSON.parse(eventData.toString());
+        if (!event) {
+            throw new Error('Event payload does not provide data.');
+        }
+        return event;
+    });
+}
 function gitDiff(diffBase) {
     return __awaiter(this, void 0, void 0, function* () {
         core.info('Finding changed packages');
@@ -309,7 +319,7 @@ function run() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             const context = yield (0, context_1.getContext)();
-            const diffBase = yield (0, find_changes_1.getBranchPoint)(context);
+            const diffBase = yield (0, find_changes_1.getBranchPoint)();
             core.info(`Using branch point of "${diffBase}" to determine changes`);
             core.setOutput('diff_base', diffBase);
             const diffOutput = yield (0, find_changes_1.gitDiff)(diffBase);
