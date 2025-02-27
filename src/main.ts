@@ -34,7 +34,7 @@ async function run(): Promise<void> {
     core.info(`Changed directories: ${directoryNames.join(' ')}`)
     core.setOutput('changed_directories', directoryNames.join(' '))
 
-    if (directoryNames.length === 0 && !getAllChanges) {
+    if (directoryNames.length === 0) {
       core.setOutput('matrix_empty', 'true')
     } else {
       core.setOutput('matrix_empty', 'false')
