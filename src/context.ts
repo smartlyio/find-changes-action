@@ -32,7 +32,8 @@ export async function getContext(): Promise<Context> {
     directoryContaining,
     directoryLevels,
     exclude: new RegExp(exclude),
-    forceMatchPattern: forceMatchPattern ? new RegExp(forceMatchPattern) : null
+    forceMatchPattern:
+      forceMatchPattern !== '' ? new RegExp(forceMatchPattern) : null
   }
   return context
 }
