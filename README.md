@@ -1,6 +1,6 @@
 # Find directories that contain changes
 
-Find directories that contain changes in the current pull request.
+Find directories that contain changes on `pull_request` or `push` event.
 
 Based on inputs, will either:
 
