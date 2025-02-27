@@ -20,10 +20,11 @@ async function run(): Promise<void> {
       diffOutput,
       context
     )
-    const changedDirectories: string[] = await getChangedDirectories(
-      diffOutput,
-      context
-    )
+
+    const changedDirectories: string[] = getAllChanges
+      ? await getChangedDirectories(diffOutput, context) // todo: new function
+      : await getChangedDirectories(diffOutput, context)
+
     const directoryNames = await filterGitOutputByFile(
       changedDirectories,
       context
