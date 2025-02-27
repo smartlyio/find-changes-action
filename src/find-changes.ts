@@ -96,6 +96,12 @@ export async function gitDiff(diffBase: string): Promise<string> {
   return gitOutput.stdout
 }
 
+export async function gitLsFiles(): Promise<string> {
+  core.info('Finding all files')
+  const gitOutput = await execCommand('git', ['ls', 'files'])
+  return gitOutput.stdout
+}
+
 // todo: custom logic, not a repeat of getChangedDirectories like it is now
 export async function getAllDirectories(
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
