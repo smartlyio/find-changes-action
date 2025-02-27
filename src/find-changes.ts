@@ -102,13 +102,9 @@ export async function gitLsFiles(): Promise<string> {
   return gitOutput.stdout
 }
 
-// todo: custom logic, not a repeat of getChangedDirectories like it is now
-export async function getAllDirectories(
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  _context: Context
-): Promise<string[]> {
-  // git ls-files here
-  return [] // dummy return for now
+export async function getAllDirectories(context: Context): Promise<string[]> {
+  const lsOutput = await gitLsFiles()
+  return getChangedDirectories(lsOutput, context)
 }
 
 export async function getChangedDirectories(
