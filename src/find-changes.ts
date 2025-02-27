@@ -98,7 +98,7 @@ export async function gitDiff(diffBase: string): Promise<string> {
 
 export async function gitLsFiles(): Promise<string> {
   core.info('Finding all files')
-  const gitOutput = await execCommand('git', ['ls', 'files'])
+  const gitOutput = await execCommand('git', ['ls-files'])
   return gitOutput.stdout
 }
 
