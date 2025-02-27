@@ -98,36 +98,11 @@ export async function gitDiff(diffBase: string): Promise<string> {
 
 // todo: custom logic, not a repeat of getChangedDirectories like it is now
 export async function getAllDirectories(
-  diffOutput: string,
-  context: Context
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  _context: Context
 ): Promise<string[]> {
-  const directoryLevels: number = context.directoryLevels
-    ? context.directoryLevels
-    : -1
-  const changedDirectories = await Promise.all(
-    diffOutput.split('\n').map(async line => {
-      const parts = line.trim().split(path.sep)
-      if (parts.length <= directoryLevels) {
-        return null
-      }
-      const slice = parts.slice(0, directoryLevels)
-      if (slice.length === 0) {
-        return null
-      }
-      const directory = slice.join(path.sep)
-      try {
-        await fs.stat(directory)
-        return directory
-      } catch (e) {
-        return null
-      }
-    })
-  )
-
-  const uniqueDirectories = new Set(
-    changedDirectories.filter(item => item) as string[]
-  )
-  return [...uniqueDirectories]
+  // git ls-files here
+  return [] // dummy return for now
 }
 
 export async function getChangedDirectories(

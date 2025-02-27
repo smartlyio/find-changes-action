@@ -23,7 +23,7 @@ async function run(): Promise<void> {
     )
 
     const changedDirectories: string[] = getAllChanges
-      ? await getAllDirectories(diffOutput, context)
+      ? await getAllDirectories(context)
       : await getChangedDirectories(diffOutput, context)
 
     const directoryNames = await filterGitOutputByFile(
