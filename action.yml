@@ -39,13 +39,13 @@ inputs:
       libraries or CI configs) should trigger builds of all packages.
 outputs:
   matrix:
-    description: "Matrix to use in a downstream job"
+    description: 'Matrix to use in a downstream job'
   matrix_empty:
     description: "'true' if there are no values in the matrix"
   changed_directories:
-    description: "List of directories containing changes"
+    description: 'List of directories containing changes'
   diff_base:
-    description: "Git commit used as the base for finding pull request changes"
+    description: 'Git commit used as the base for finding pull request changes'
 runs:
   using: 'node20'
   main: 'dist/index.js'
