@@ -26,6 +26,6 @@ Based on inputs, will either:
 ```yml
 - uses: smartlyio/find-changes-action@v2
   with:
-    directory_containing: "config.yml"
+    directory_containing: 'config.yml'
     # use the default exclude only omitting .github and subdirectories
 ```
