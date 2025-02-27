@@ -6,7 +6,7 @@ inputs:
     description: >-
       Find changes to directories containing a file with this name.
 
-      This is mutually excludive with the directory_levels option.
+      This is mutually exclusive with the directory_levels option.
     required: false
   directory_levels:
     required: false
@@ -17,7 +17,7 @@ inputs:
       repository root) directories that contain changes, no matter how
       deeply nested the changed files are.
 
-      This is mutually excludive with the directory_containing option.
+      This is mutually exclusive with the directory_containing option.
   exclude:
     description: >-
       Exclude directories that match the pattern.  If overriding,
