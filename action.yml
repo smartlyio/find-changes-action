@@ -31,9 +31,10 @@ inputs:
     default: '^\.github($|\/.*)'
   force_all_on_match:
     description: >-
-      List of directories to monitor for changes. If any of these directories
-      have changes, all matchable directories will be included in the output
-      regardless of their change status.
+      Regex to monitor for changes. If any of the directories matched by
+      this have changes, all directories matchable by other inputs will
+      be included in the output regardless of their change status.
+
       Useful for monorepos where changes to shared components (like common
       libraries or CI configs) should trigger builds of all packages.
     required: false
