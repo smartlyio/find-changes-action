@@ -15,16 +15,16 @@ Based on inputs, will either:
 ### Directories at a certain level
 
 ```
-- uses: smartlyio/find-changes-action
+- uses: smartlyio/find-changes-action@v2
   with:
     directory_levels: 1
-    exclude: "^(\.github($|\/.*))|(EXCLUDE_.*)"
+    exclude: '^(\.github($|\/.*))|(EXCLUDE_.*)'
 ```
 
 ### Directories containing a file
 
 ```
-- uses: smartlyio/find-changes-action
+- uses: smartlyio/find-changes-action@v2
   with:
     directory_containing: "config.yml"
     # use the default exclude only omitting .github and subdirectories
