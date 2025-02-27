@@ -4,8 +4,7 @@ export interface Context {
   directoryContaining: string | null
   directoryLevels: number | null
   exclude: RegExp
-  forceMatch: boolean
-  forceMatchPattern: RegExp
+  forceMatchPattern: RegExp | null
 }
 
 export async function getContext(): Promise<Context> {
@@ -33,10 +32,7 @@ export async function getContext(): Promise<Context> {
     directoryContaining,
     directoryLevels,
     exclude: new RegExp(exclude),
-    forceMatch: forceMatchPattern ? true : false,
-    forceMatchPattern: forceMatchPattern
-      ? new RegExp(forceMatchPattern)
-      : new RegExp('')
+    forceMatchPattern: forceMatchPattern ? new RegExp(forceMatchPattern) : null
   }
   return context
 }

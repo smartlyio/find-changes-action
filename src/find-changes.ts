@@ -192,12 +192,13 @@ export async function getForceMatchChanges(
   diffOutput: string,
   context: Context
 ): Promise<boolean> {
-  if (!context.forceMatch) {
+  if (!context.forceMatchPattern) {
     return false
   }
+  const pattern = context.forceMatchPattern
 
   const changedFiles = diffOutput
     .split('\n')
     .filter(line => line.trim().length > 0)
-  return changedFiles.some(file => file.match(context.forceMatchPattern))
+  return changedFiles.some(file => file.match(pattern))
 }
