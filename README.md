@@ -14,7 +14,7 @@ Based on inputs, will either:
 
 ### Directories at a certain level
 
-```
+```yml
 - uses: smartlyio/find-changes-action@v2
   with:
     directory_levels: 1
@@ -23,7 +23,7 @@ Based on inputs, will either:
 
 ### Directories containing a file
 
-```
+```yml
 - uses: smartlyio/find-changes-action@v2
   with:
     directory_containing: "config.yml"
