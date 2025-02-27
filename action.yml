@@ -9,7 +9,6 @@ inputs:
       This is mutually exclusive with the directory_levels option.
     required: false
   directory_levels:
-    required: false
     description: >-
       Find changes to directories nested to this level.
 
@@ -18,6 +17,7 @@ inputs:
       deeply nested the changed files are.
 
       This is mutually exclusive with the directory_containing option.
+    required: false
   exclude:
     description: >-
       Exclude directories that match the pattern.  If overriding,
@@ -30,13 +30,13 @@ inputs:
     required: false
     default: '^\.github($|\/.*)'
   force_all_on_match:
-    required: false
     description: >-
       List of directories to monitor for changes. If any of these directories
       have changes, all matchable directories will be included in the output
       regardless of their change status.
       Useful for monorepos where changes to shared components (like common
       libraries or CI configs) should trigger builds of all packages.
+    required: false
     default: ''
 outputs:
   matrix:
