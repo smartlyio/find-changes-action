@@ -187,3 +187,17 @@ export async function filterGitOutputByFile(
   const uniqueDirectories = new Set(filteredDirectories)
   return [...uniqueDirectories]
 }
+
+export async function getForceMatchChanges(
+  diffOutput: string,
+  context: Context
+): Promise<boolean> {
+  if (!context.forceMatch) {
+    return false
+  }
+
+  const changedFiles = diffOutput
+    .split('\n')
+    .filter(line => line.trim().length > 0)
+  return changedFiles.some(file => file.match(context.forceMatchPattern))
+}

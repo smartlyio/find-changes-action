@@ -3,6 +3,7 @@ import {
   filterGitOutputByFile,
   getBranchPoint,
   getChangedDirectories,
+  getForceMatchChanges,
   gitDiff
 } from './find-changes'
 import {getContext} from './context'
@@ -15,6 +16,10 @@ async function run(): Promise<void> {
     core.setOutput('diff_base', diffBase)
 
     const diffOutput = await gitDiff(diffBase)
+    const forceMatchChanges: boolean = await getForceMatchChanges(
+      diffOutput,
+      context
+    )
     const changedDirectories: string[] = await getChangedDirectories(
       diffOutput,
       context
@@ -27,7 +32,7 @@ async function run(): Promise<void> {
     core.info(`Changed directories: ${directoryNames.join(' ')}`)
     core.setOutput('changed_directories', directoryNames.join(' '))
 
-    if (directoryNames.length === 0) {
+    if (directoryNames.length === 0 && !forceMatchChanges) {
       core.setOutput('matrix_empty', 'true')
     } else {
       core.setOutput('matrix_empty', 'false')
