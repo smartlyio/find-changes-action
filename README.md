@@ -5,7 +5,7 @@ Find directories that contain changes on `pull_request` or `push` event.
 Based on inputs, will either:
 
 - list all directories containing changes that match the specified
-  nesting level (e.g. `1` for top-level directories, `2` for two-level
+  nesting level (e.g. `1` for top-level directories, `2` for second-level
   nested directories, etc)
 - List all directories containing changes that also contain a named
   file.
