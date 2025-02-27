@@ -37,7 +37,7 @@ inputs:
       regardless of their change status.
       Useful for monorepos where changes to shared components (like common
       libraries or CI configs) should trigger builds of all packages.
-    default: ""
+    default: ''
 outputs:
   matrix:
     description: 'Matrix to use in a downstream job'
