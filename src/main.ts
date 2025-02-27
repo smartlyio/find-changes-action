@@ -2,6 +2,7 @@ import * as core from '@actions/core'
 import {
   filterGitOutputByFile,
   getBranchPoint,
+  getAllDirectories,
   getChangedDirectories,
   getForceMatchChanges,
   gitDiff
@@ -22,7 +23,7 @@ async function run(): Promise<void> {
     )
 
     const changedDirectories: string[] = getAllChanges
-      ? await getChangedDirectories(diffOutput, context) // todo: new function
+      ? await getAllDirectories(diffOutput, context)
       : await getChangedDirectories(diffOutput, context)
 
     const directoryNames = await filterGitOutputByFile(
