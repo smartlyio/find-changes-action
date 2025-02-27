@@ -110,7 +110,8 @@ top-level-file
     const context: Context = {
       directoryContaining: null, // Not used by getChangedDirectories
       directoryLevels: null,
-      exclude: /^\.github\/.*/ // Not used by getChangedDirectories
+      exclude: /^\.github\/.*/, // Not used by getChangedDirectories
+      forceMatchPattern: null
     }
     const uniqueDirectories = await getChangedDirectories(gitOutput, context)
     const expected = new Set([
@@ -141,7 +142,8 @@ top-level-file
     const context: Context = {
       directoryContaining: null,
       directoryLevels: 1,
-      exclude: /^\.github\/.*/ // Not used by getChangedDirectories
+      exclude: /^\.github\/.*/, // Not used by getChangedDirectories
+      forceMatchPattern: null
     }
     const uniqueDirectories = await getChangedDirectories(gitOutput, context)
     const expected = new Set([
@@ -172,7 +174,8 @@ top-level-file
     const context: Context = {
       directoryContaining: null,
       directoryLevels: 2,
-      exclude: /^\.github\/.*/ // Not used by getChangedDirectories
+      exclude: /^\.github\/.*/, // Not used by getChangedDirectories
+      forceMatchPattern: null
     }
     const uniqueDirectories = await getChangedDirectories(gitOutput, context)
     const expected = new Set([
@@ -206,7 +209,8 @@ top-level-file
     const context: Context = {
       directoryContaining: null, // Not used by getChangedDirectories
       directoryLevels: null,
-      exclude: /^\.github\/.*/ // Not used by getChangedDirectories
+      exclude: /^\.github\/.*/, // Not used by getChangedDirectories
+      forceMatchPattern: null
     }
     const uniqueDirectories = await getChangedDirectories(gitOutput, context)
     const expected = new Set([
@@ -266,7 +270,8 @@ describe('filterGitOutputByFile', () => {
     const context: Context = {
       directoryContaining: null,
       directoryLevels: null,
-      exclude: /^\.github($|\/.*)/
+      exclude: /^\.github($|\/.*)/,
+      forceMatchPattern: null
     }
     expect(await filterGitOutputByFile(changedDirectories, context)).toEqual(
       expected
@@ -283,7 +288,8 @@ describe('filterGitOutputByFile', () => {
     const context: Context = {
       directoryContaining: null,
       directoryLevels: null,
-      exclude: /^\.github($|\/.*)/
+      exclude: /^\.github($|\/.*)/,
+      forceMatchPattern: null
     }
     expect(await filterGitOutputByFile(changedDirectories, context)).toEqual(
       expected
@@ -296,7 +302,8 @@ describe('filterGitOutputByFile', () => {
     const context: Context = {
       directoryContaining: 'pr_event.json',
       directoryLevels: null,
-      exclude: /^\.github($|\/.*)/
+      exclude: /^\.github($|\/.*)/,
+      forceMatchPattern: null
     }
     expect(await filterGitOutputByFile(changedDirectories, context)).toEqual(
       expected
