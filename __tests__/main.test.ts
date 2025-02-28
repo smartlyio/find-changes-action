@@ -4,7 +4,8 @@ import {
   getChangedDirectories,
   containsFileFilter,
   isExcludedFilter,
-  filterGitOutputByFile
+  filterGitOutputByFile,
+  getForceMatchChanges
 } from '../src/find-changes'
 import {Context} from '../src/context'
 
@@ -110,7 +111,8 @@ top-level-file
     const context: Context = {
       directoryContaining: null, // Not used by getChangedDirectories
       directoryLevels: null,
-      exclude: /^\.github\/.*/ // Not used by getChangedDirectories
+      exclude: /^\.github\/.*/, // Not used by getChangedDirectories
+      forceAllPattern: null
     }
     const uniqueDirectories = await getChangedDirectories(gitOutput, context)
     const expected = new Set([
@@ -141,7 +143,8 @@ top-level-file
     const context: Context = {
       directoryContaining: null,
       directoryLevels: 1,
-      exclude: /^\.github\/.*/ // Not used by getChangedDirectories
+      exclude: /^\.github\/.*/, // Not used by getChangedDirectories
+      forceAllPattern: null
     }
     const uniqueDirectories = await getChangedDirectories(gitOutput, context)
     const expected = new Set([
@@ -172,7 +175,8 @@ top-level-file
     const context: Context = {
       directoryContaining: null,
       directoryLevels: 2,
-      exclude: /^\.github\/.*/ // Not used by getChangedDirectories
+      exclude: /^\.github\/.*/, // Not used by getChangedDirectories
+      forceAllPattern: null
     }
     const uniqueDirectories = await getChangedDirectories(gitOutput, context)
     const expected = new Set([
@@ -206,7 +210,8 @@ top-level-file
     const context: Context = {
       directoryContaining: null, // Not used by getChangedDirectories
       directoryLevels: null,
-      exclude: /^\.github\/.*/ // Not used by getChangedDirectories
+      exclude: /^\.github\/.*/, // Not used by getChangedDirectories
+      forceAllPattern: null
     }
     const uniqueDirectories = await getChangedDirectories(gitOutput, context)
     const expected = new Set([
@@ -266,7 +271,8 @@ describe('filterGitOutputByFile', () => {
     const context: Context = {
       directoryContaining: null,
       directoryLevels: null,
-      exclude: /^\.github($|\/.*)/
+      exclude: /^\.github($|\/.*)/,
+      forceAllPattern: null
     }
     expect(await filterGitOutputByFile(changedDirectories, context)).toEqual(
       expected
@@ -283,7 +289,8 @@ describe('filterGitOutputByFile', () => {
     const context: Context = {
       directoryContaining: null,
       directoryLevels: null,
-      exclude: /^\.github($|\/.*)/
+      exclude: /^\.github($|\/.*)/,
+      forceAllPattern: null
     }
     expect(await filterGitOutputByFile(changedDirectories, context)).toEqual(
       expected
@@ -296,10 +303,66 @@ describe('filterGitOutputByFile', () => {
     const context: Context = {
       directoryContaining: 'pr_event.json',
       directoryLevels: null,
-      exclude: /^\.github($|\/.*)/
+      exclude: /^\.github($|\/.*)/,
+      forceAllPattern: null
     }
     expect(await filterGitOutputByFile(changedDirectories, context)).toEqual(
       expected
     )
+  })
+})
+
+describe('getForceMatchChanges', () => {
+  test('returns false when pattern is null', async () => {
+    const diffOutput = `\
+package1/file
+package2/file
+package2/otherfile`
+    const context: Context = {
+      directoryContaining: null,
+      directoryLevels: null,
+      exclude: /^\.github($|\/.*)/,
+      forceAllPattern: null
+    }
+    expect(await getForceMatchChanges(diffOutput, context)).toEqual(false)
+  })
+
+  test('returns true when pattern matches any changed file', async () => {
+    const diffOutput = `\
+package1/file
+package2/package.json
+package2/otherfile`
+    const context: Context = {
+      directoryContaining: null,
+      directoryLevels: null,
+      exclude: /^\.github($|\/.*)/,
+      forceAllPattern: /package\.json$/
+    }
+    expect(await getForceMatchChanges(diffOutput, context)).toEqual(true)
+  })
+
+  test('returns false when pattern does not match any changed file', async () => {
+    const diffOutput = `\
+package1/file
+package2/configuration.yaml
+package2/otherfile`
+    const context: Context = {
+      directoryContaining: null,
+      directoryLevels: null,
+      exclude: /^\.github($|\/.*)/,
+      forceAllPattern: /package\.json$/
+    }
+    expect(await getForceMatchChanges(diffOutput, context)).toEqual(false)
+  })
+
+  test('handles empty git output correctly', async () => {
+    const diffOutput = ''
+    const context: Context = {
+      directoryContaining: null,
+      directoryLevels: null,
+      exclude: /^\.github($|\/.*)/,
+      forceAllPattern: /package\.json$/
+    }
+    expect(await getForceMatchChanges(diffOutput, context)).toEqual(false)
   })
 })

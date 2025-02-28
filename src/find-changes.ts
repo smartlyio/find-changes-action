@@ -96,6 +96,17 @@ export async function gitDiff(diffBase: string): Promise<string> {
   return gitOutput.stdout
 }
 
+export async function gitLsFiles(): Promise<string> {
+  core.info('Finding all files')
+  const gitOutput = await execCommand('git', ['ls-files'])
+  return gitOutput.stdout
+}
+
+export async function getAllDirectories(context: Context): Promise<string[]> {
+  const lsOutput = await gitLsFiles()
+  return getChangedDirectories(lsOutput, context)
+}
+
 export async function getChangedDirectories(
   diffOutput: string,
   context: Context
@@ -186,4 +197,19 @@ export async function filterGitOutputByFile(
 
   const uniqueDirectories = new Set(filteredDirectories)
   return [...uniqueDirectories]
+}
+
+export async function getForceMatchChanges(
+  diffOutput: string,
+  context: Context
+): Promise<boolean> {
+  if (!context.forceAllPattern) {
+    return false
+  }
+  const pattern = context.forceAllPattern
+
+  const changedFiles = diffOutput
+    .split('\n')
+    .filter(line => line.trim().length > 0)
+  return changedFiles.some(file => file.match(pattern))
 }

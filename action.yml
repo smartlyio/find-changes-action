@@ -6,10 +6,9 @@ inputs:
     description: >-
       Find changes to directories containing a file with this name.
 
-      This is mutually excludive with the directory_levels option.
+      This is mutually exclusive with the directory_levels option.
     required: false
   directory_levels:
-    required: false
     description: >-
       Find changes to directories nested to this level.
 
@@ -17,7 +16,8 @@ inputs:
       repository root) directories that contain changes, no matter how
       deeply nested the changed files are.
 
-      This is mutually excludive with the directory_containing option.
+      This is mutually exclusive with the directory_containing option.
+    required: false
   exclude:
     description: >-
       Exclude directories that match the pattern.  If overriding,
@@ -28,16 +28,26 @@ inputs:
 
       This should be a regular expression pattern.
     required: false
-    default: "^\\.github($|\\/.*)"
+    default: '^\.github($|\/.*)'
+  force_all_on_match:
+    description: >-
+      Regex to monitor for changes. If any of the directories matched by
+      this have changes, all directories matchable by other inputs will
+      be included in the output regardless of their change status.
+
+      Useful for monorepos where changes to shared components (like common
+      libraries or CI configs) should trigger builds of all packages.
+    required: false
+    default: ''
 outputs:
   matrix:
-    description: "Matrix to use in a downstream job"
+    description: 'Matrix to use in a downstream job'
   matrix_empty:
     description: "'true' if there are no values in the matrix"
   changed_directories:
-    description: "List of directories containing changes"
+    description: 'List of directories containing changes'
   diff_base:
-    description: "Git commit used as the base for finding pull request changes"
+    description: 'Git commit used as the base for finding pull request changes'
 runs:
   using: 'node20'
   main: 'dist/index.js'
