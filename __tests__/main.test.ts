@@ -328,7 +328,7 @@ package2/otherfile`
   })
 
   test('returns true when pattern matches any changed file', async () => {
-    const gitOutput = `\
+    const diffOutput = `\
 package1/file
 package2/package.json
 package2/otherfile`
@@ -338,7 +338,7 @@ package2/otherfile`
       exclude: /^\.github($|\/.*)/,
       forceAllPattern: /package\.json$/
     }
-    expect(await getForceMatchChanges(gitOutput, context)).toEqual(true)
+    expect(await getForceMatchChanges(diffOutput, context)).toEqual(true)
   })
 
   test('returns false when pattern does not match any changed file', async () => {
