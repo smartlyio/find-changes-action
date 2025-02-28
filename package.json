@@ -1,6 +1,6 @@
 {
   "name": "find-changes-action",
-  "version": "2.0.1",
+  "version": "2.1.0",
   "private": true,
   "description": "Find which subdirectories have changes for input into a matrix build",
   "main": "lib/main.js",
