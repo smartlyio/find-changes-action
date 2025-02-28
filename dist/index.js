@@ -194,7 +194,7 @@ exports.gitDiff = gitDiff;
 function gitLsFiles() {
     return __awaiter(this, void 0, void 0, function* () {
         core.info('Finding all files');
-        const gitOutput = yield execCommand('git', ['ls-files']);
+        const gitOutput = yield execCommand('git', ['ls', 'files']);
         return gitOutput.stdout;
     });
 }
