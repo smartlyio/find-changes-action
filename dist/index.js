@@ -46,7 +46,6 @@ function getContext() {
         const directoryContainingRaw = core.getInput('directory_containing');
         const directoryLevelsRaw = core.getInput('directory_levels');
         const exclude = core.getInput('exclude');
-        const forceAllOnMatch = core.getInput('force_all_on_match');
         const directoryLevels = directoryLevelsRaw === '' ? null : parseInt(directoryLevelsRaw);
         const directoryContaining = directoryContainingRaw === '' ? null : directoryContainingRaw;
         if (!directoryLevels && !directoryContaining) {
@@ -58,8 +57,7 @@ function getContext() {
         const context = {
             directoryContaining,
             directoryLevels,
-            exclude: new RegExp(exclude),
-            forceAllPattern: forceAllOnMatch !== '' ? new RegExp(forceAllOnMatch) : null
+            exclude: new RegExp(exclude)
         };
         return context;
     });
@@ -107,7 +105,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.getForceMatchChanges = exports.filterGitOutputByFile = exports.isExcludedFilter = exports.containsFileFilter = exports.getChangedDirectories = exports.getAllDirectories = exports.gitLsFiles = exports.gitDiff = exports.getBranchPoint = void 0;
+exports.filterGitOutputByFile = exports.isExcludedFilter = exports.containsFileFilter = exports.getChangedDirectories = exports.gitDiff = exports.getBranchPoint = void 0;
 const core = __importStar(__nccwpck_require__(186));
 const exec = __importStar(__nccwpck_require__(514));
 const path = __importStar(__nccwpck_require__(17));
@@ -191,21 +189,6 @@ function gitDiff(diffBase) {
     });
 }
 exports.gitDiff = gitDiff;
-function gitLsFiles() {
-    return __awaiter(this, void 0, void 0, function* () {
-        core.info('Finding all files');
-        const gitOutput = yield execCommand('git', ['ls', 'files']);
-        return gitOutput.stdout;
-    });
-}
-exports.gitLsFiles = gitLsFiles;
-function getAllDirectories(context) {
-    return __awaiter(this, void 0, void 0, function* () {
-        const lsOutput = yield gitLsFiles();
-        return getChangedDirectories(lsOutput, context);
-    });
-}
-exports.getAllDirectories = getAllDirectories;
 function getChangedDirectories(diffOutput, context) {
     return __awaiter(this, void 0, void 0, function* () {
         const directoryLevels = context.directoryLevels
@@ -287,19 +270,6 @@ function filterGitOutputByFile(changedDirectories, context) {
     });
 }
 exports.filterGitOutputByFile = filterGitOutputByFile;
-function getForceMatchChanges(diffOutput, context) {
-    return __awaiter(this, void 0, void 0, function* () {
-        if (!context.forceAllPattern) {
-            return false;
-        }
-        const pattern = context.forceAllPattern;
-        const changedFiles = diffOutput
-            .split('\n')
-            .filter(line => line.trim().length > 0);
-        return changedFiles.some(file => file.match(pattern));
-    });
-}
-exports.getForceMatchChanges = getForceMatchChanges;
 
 
 /***/ }),
@@ -353,10 +323,7 @@ function run() {
             core.info(`Using branch point of "${diffBase}" to determine changes`);
             core.setOutput('diff_base', diffBase);
             const diffOutput = yield (0, find_changes_1.gitDiff)(diffBase);
-            const getAllChanges = yield (0, find_changes_1.getForceMatchChanges)(diffOutput, context);
-            const changedDirectories = getAllChanges
-                ? yield (0, find_changes_1.getAllDirectories)(context)
-                : yield (0, find_changes_1.getChangedDirectories)(diffOutput, context);
+            const changedDirectories = yield (0, find_changes_1.getChangedDirectories)(diffOutput, context);
             const directoryNames = yield (0, find_changes_1.filterGitOutputByFile)(changedDirectories, context);
             core.info(`Changed directories: ${directoryNames.join(' ')}`);
             core.setOutput('changed_directories', directoryNames.join(' '));
