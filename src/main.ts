@@ -8,6 +8,7 @@ import {
   gitDiff
 } from './find-changes'
 import {getContext} from './context'
+import {getBasenames} from './utils'
 
 async function run(): Promise<void> {
   try {
@@ -33,6 +34,10 @@ async function run(): Promise<void> {
 
     core.info(`Changed directories: ${directoryNames.join(' ')}`)
     core.setOutput('changed_directories', directoryNames.join(' '))
+
+    const basenames = getBasenames(directoryNames)
+    core.info(`Directory basenames: ${basenames.join(' ')}`)
+    core.setOutput('basename', basenames.join(' '))
 
     if (directoryNames.length === 0) {
       core.setOutput('matrix_empty', 'true')

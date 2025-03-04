@@ -46,6 +46,8 @@ outputs:
     description: "'true' if there are no values in the matrix"
   changed_directories:
     description: 'List of directories containing changes'
+  basename:
+    description: 'List of directory basenames (last path component) containing changes'
   diff_base:
     description: 'Git commit used as the base for finding pull request changes'
 runs:
