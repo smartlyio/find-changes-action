@@ -345,7 +345,6 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__nccwpck_require__(186));
 const find_changes_1 = __nccwpck_require__(326);
 const context_1 = __nccwpck_require__(842);
-const utils_1 = __nccwpck_require__(918);
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
@@ -371,10 +370,6 @@ function run() {
             const matrixJson = JSON.stringify(matrix);
             core.info(`Created matrix: ${matrixJson}`);
             core.setOutput('matrix', matrixJson);
-            const matrixObjects = (0, utils_1.createMatrixObjects)(directoryNames);
-            const multiValueMatrix = JSON.stringify({ include: matrixObjects });
-            core.info(`Created multivalue matrix: ${multiValueMatrix}`);
-            core.setOutput('multivalue_matrix', multiValueMatrix);
         }
         catch (error) {
             core.setFailed(`${error}`);
@@ -382,29 +377,6 @@ function run() {
     });
 }
 run();
-
-
-/***/ }),
-
-/***/ 918:
-/***/ ((__unused_webpack_module, exports) => {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.createMatrixObjects = exports.getBasenames = void 0;
-function getBasenames(input) {
-    const getBasename = (dir) => dir.split('/').pop() || dir;
-    return Array.isArray(input) ? input.map(getBasename) : getBasename(input);
-}
-exports.getBasenames = getBasenames;
-function createMatrixObjects(directories) {
-    return directories.map(directory => ({
-        directory,
-        basename: getBasenames(directory)
-    }));
-}
-exports.createMatrixObjects = createMatrixObjects;
 
 
 /***/ }),
