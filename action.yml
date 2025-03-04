@@ -42,6 +42,8 @@ inputs:
 outputs:
   matrix:
     description: 'Matrix to use in a downstream job'
+  multivalue_matrix:
+    description: 'Matrix in {directory, basename} format - new values can be added over time'
   matrix_empty:
     description: "'true' if there are no values in the matrix"
   changed_directories:

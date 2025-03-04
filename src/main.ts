@@ -8,6 +8,7 @@ import {
   gitDiff
 } from './find-changes'
 import {getContext} from './context'
+import {createMatrixObjects} from './utils'
 
 async function run(): Promise<void> {
   try {
@@ -44,6 +45,11 @@ async function run(): Promise<void> {
     const matrixJson = JSON.stringify(matrix)
     core.info(`Created matrix: ${matrixJson}`)
     core.setOutput('matrix', matrixJson)
+
+    const matrixObjects = createMatrixObjects(directoryNames)
+    const multiValueMatrix = JSON.stringify(matrixObjects)
+    core.info(`Created multivalue matrix: ${multiValueMatrix}`)
+    core.setOutput('multivalue_matrix', multiValueMatrix)
   } catch (error) {
     core.setFailed(`${error}`)
   }
