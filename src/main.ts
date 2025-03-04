@@ -8,7 +8,7 @@ import {
   gitDiff
 } from './find-changes'
 import {getContext} from './context'
-import {getBasenames} from './utils'
+import {createMatrixObjects} from './utils'
 
 async function run(): Promise<void> {
   try {
@@ -35,10 +35,6 @@ async function run(): Promise<void> {
     core.info(`Changed directories: ${directoryNames.join(' ')}`)
     core.setOutput('changed_directories', directoryNames.join(' '))
 
-    const basenames = getBasenames(directoryNames)
-    core.info(`Directory basenames: ${basenames.join(' ')}`)
-    core.setOutput('basename', basenames.join(' '))
-
     if (directoryNames.length === 0) {
       core.setOutput('matrix_empty', 'true')
     } else {
@@ -49,6 +45,11 @@ async function run(): Promise<void> {
     const matrixJson = JSON.stringify(matrix)
     core.info(`Created matrix: ${matrixJson}`)
     core.setOutput('matrix', matrixJson)
+
+    const matrixObjects = createMatrixObjects(directoryNames)
+    const multiValueMatrix = JSON.stringify({include: matrixObjects})
+    core.info(`Created multivalue matrix: ${multiValueMatrix}`)
+    core.setOutput('multivalue_matrix', multiValueMatrix)
   } catch (error) {
     core.setFailed(`${error}`)
   }
