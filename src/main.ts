@@ -47,7 +47,7 @@ async function run(): Promise<void> {
     core.setOutput('matrix', matrixJson)
 
     const matrixObjects = createMatrixObjects(directoryNames)
-    const multiValueMatrix = JSON.stringify({include: matrixObjects})
+    const multiValueMatrix = JSON.stringify(matrixObjects)
     core.info(`Created multivalue matrix: ${multiValueMatrix}`)
     core.setOutput('multivalue_matrix', multiValueMatrix)
   } catch (error) {
