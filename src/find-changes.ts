@@ -38,12 +38,13 @@ export async function getBranchPoint(): Promise<string> {
 
   switch (eventName as string) {
     case 'pull_request':
+    case 'merge_group':
       return handlePullRequest()
     case 'push':
       return handlePush()
   }
   throw new Error(
-    'find-changed-packages only works on pull_request and push events'
+    'find-changed-packages only works on pull_request, merge_group, and push events'
   )
 }
 
