@@ -135,11 +135,12 @@ function getBranchPoint() {
         const eventName = process.env['GITHUB_EVENT_NAME'];
         switch (eventName) {
             case 'pull_request':
+            case 'merge_group':
                 return handlePullRequest();
             case 'push':
                 return handlePush();
         }
-        throw new Error('find-changed-packages only works on pull_request and push events');
+        throw new Error('find-changed-packages only works on pull_request, merge_group, and push events');
     });
 }
 exports.getBranchPoint = getBranchPoint;
