@@ -49,6 +49,11 @@
       "matchDepTypes": ["devDependencies"],
       "matchUpdateTypes": ["major"],
       "labels": ["patch", "renovate-deps"]
+    },
+    {
+      "matchUpdateTypes": ["pin", "pinDigest"],
+      "minimumReleaseAge": null,
+      "automerge": true
     }
   ],
   "github-actions": {
