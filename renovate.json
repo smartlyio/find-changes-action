@@ -54,7 +54,18 @@
       "matchUpdateTypes": ["pin", "pinDigest"],
       "minimumReleaseAge": null,
       "automerge": true
+    },
+    {
+      "matchPackageNames": ["@types/node"],
+      "labels": ["no release", "renovate-deps"]
+    },
+    {
+      "description": "Pin third-party GitHub Actions to digest SHAs only; Smartly-owned actions stay tag-based (after catch-all pin rules so pinDigests is not overridden)",
+      "matchManagers": ["github-actions"],
+      "matchPackageNames": ["/^smartlyio\\//"],
+      "pinDigests": false
     }
+
   ],
   "github-actions": {
     "enabled": true,
