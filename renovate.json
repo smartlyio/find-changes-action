@@ -65,6 +65,7 @@
       "matchPackageNames": ["/^smartlyio\\//"],
       "pinDigests": false
     }
+
   ],
   "github-actions": {
     "enabled": true,
